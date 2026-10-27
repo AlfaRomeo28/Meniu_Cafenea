@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 
+//  ingredient + cantitatea ceruta
 class CReteta
 {
 private:
@@ -12,9 +13,10 @@ private:
 public:
     CReteta();
     CReteta(const std::string& nume, double cantitate);
+
     const std::string& getnume() const;
     double getcantitate() const;
-    friend std::ostream& operator<<(std::ostream& os, const CReteta& cr); //ofera acces la membri privati
-};
 
+    friend std::ostream& operator<<(std::ostream& os, const CReteta& cr);
+};
 #endif
