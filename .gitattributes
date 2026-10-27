@@ -7,8 +7,3 @@ scripts/** linguist-vendored
 *.bash linguist-vendored
 **/*.bash linguist-vendored
 
-
-CMakeLists.txt linguist-vendored
-**/CMakeLists.txt linguist-vendored
-*.cmake linguist-vendored
-**/*.cmake linguist-vendored
