@@ -1,1 +1,4 @@
-ext/** linguist-vendored
+*.sh linguist-detectable=false
+*.bash linguist-detectable=false
+CMakeLists.txt linguist-detectable=false
+*.cmake linguist-detectable=false
