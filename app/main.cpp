@@ -1,199 +1,133 @@
 #include <iostream>
+#include <limits>
 #include <string>
-#include "Ingrediente.hpp"
-#include "CReteta.hpp"
-#include "Reteta.hpp"
 #include "Cafenea.hpp"
+
+namespace
+{
+    void curataLinie()
+    {
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+
+
+    bool continua()
+    {
+        char op;
+        std::cout << "Doriti sa continuati? (Y/N): ";
+        std::cin >> op;
+        if (op == 'Y' || op == 'y')
+            return true;
+        if (op != 'N' && op != 'n')
+            std::cout << "Eroare!\n";
+        return false;
+    }
+
+    void afiseazaMeniu()
+    {
+        std::cout << "\n========================================\n"
+                  << "        MENIU GESTIUNE CAFENEA         \n"
+                  << "========================================\n"
+                  << "1. Afiseaza starea cafenelei (stocuri, sold, catalog)\n"
+                  << "2. Comanda Espresso\n"
+                  << "3. Comanda Cappuccino\n"
+                  << "4. Comanda Vanilla Latte\n"
+                  << "5. Verifica disponibilitate bautura\n"
+                  << "6. Afiseaza raportul de rentabilitate si profit\n"
+                  << "7. Reaprovizioneaza un ingredient\n"
+                  << "0. Iesire\n"
+                  << "Alege o optiune: ";
+    }
+}
 
 int main()
 {
-    Cafenea cafenea("Bobis_Bob_Caffe", 1000.0);
+    Cafenea cafenea("Bobis_Bob_Caffe", 1300.0);
 
-    //  stoc de ingrediente de baza
-    Ingrediente ingCafea("Cafea Boabe", 300.0, "g", 0.15);
-    Ingrediente ingLapte("Lapte Integral", 1000.0, "ml", 0.01);
-    Ingrediente ingVanilie("Sirop Vanilie", 200.0, "ml", 0.05);
+    cafenea.adaugaIngredient(Ingrediente("Cafea Boabe", 300.0, "g", 0.15));
+    cafenea.adaugaIngredient(Ingrediente("Lapte Integral", 1000.0, "ml", 0.01));
+    cafenea.adaugaIngredient(Ingrediente("Sirop Vanilie", 200.0, "ml", 0.05));
 
-    // Apel demonstrativ pentru toate metodele clasei Ingrediente
-    ingCafea.adaugaStoc(50.0);
-    ingCafea.consuma(10.0);
-    std::cout << "[Test getteri ingrediente] " << ingCafea.getdenumire() << " " 
-              << ingCafea.getcantitateDisponibila() << " " 
-              << ingCafea.getunitateMasura() << " " 
-              << ingCafea.getpretUnitate() << "\n";
-
-    cafenea.adaugaIngredient(ingCafea);
-    cafenea.adaugaIngredient(ingLapte);
-    cafenea.adaugaIngredient(ingVanilie);
-
-    //  Creare retete
-    CReteta compEspresso[1] =
-    {
-        CReteta("Cafea Boabe", 18.0)
-    };
-    // Test getteri CReteta
-    std::cout << "[Test getteri CReteta] " << compEspresso[0].getnume() << " " 
-              << compEspresso[0].getcantitate() << "\n";
-
+    CReteta compEspresso[1] = { CReteta("Cafea Boabe", 18.0) };
     Reteta espresso("Espresso", 10.0, compEspresso, 1);
 
-    CReteta compCappuccino[2] =
-    {
-        CReteta("Cafea Boabe", 18.0),
-        CReteta("Lapte Integral", 150.0)
-    };
+    CReteta compCappuccino[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 150.0) };
     Reteta cappuccino("Cappuccino", 16.0, compCappuccino, 2);
 
-    CReteta compVanillaLatte[3] =
-    {
-        CReteta("Cafea Boabe", 18.0),
-        CReteta("Lapte Integral", 200.0),
-        CReteta("Sirop Vanilie", 20.0)
-    };
+    CReteta compVanillaLatte[3] = { CReteta("Cafea Boabe", 18.0),
+                                    CReteta("Lapte Integral", 200.0),
+                                    CReteta("Sirop Vanilie", 20.0) };
     Reteta vanillaLatte("Vanilla Latte", 20.0, compVanillaLatte, 3);
 
-    Reteta copieTest = cappuccino;         // Copy Constructor
+    // constructor de copiere si operator=
+    Reteta copieTest = cappuccino;
     Reteta copieAtribuita;
     copieAtribuita = espresso;
+    std::cout << "Copie (ctor copiere): " << copieTest << "\n";
+    std::cout << "Copie (operator=):    " << copieAtribuita << "\n";
 
-    // Test getteri Reteta
-    std::cout << "[Test getteri Reteta] " << espresso.getDenumire() << " " 
-              << espresso.getPretVanzare() << " comp: " 
-              << espresso.getNumarComponente() << "\n";
-
-    // inregistrare retete in catalogul cafenelei
     cafenea.adaugaReteta(espresso);
     cafenea.adaugaReteta(cappuccino);
     cafenea.adaugaReteta(vanillaLatte);
 
     int optiune = -1;
-    char op2;
-
     while (optiune != 0)
     {
-        std::cout << "\n========================================\n";
-        std::cout << "        MENIU GESTIUNE CAFENEA         \n";
-        std::cout << "========================================\n";
-        std::cout << "1. Afiseaza starea cafenelei (stocuri si sold)\n";
-        std::cout << "2. Comanda Espresso\n";
-        std::cout << "3. Comanda Cappuccino\n";
-        std::cout << "4. Comanda Vanilla Latte\n";
-        std::cout << "5. Verifica disponibilitate bautura\n";
-        std::cout << "6. Afiseaza raportul de rentabilitate si profit\n";
-        std::cout << "0. Iesire\n";
-        std::cout << "Alege o optiune: ";
-        std::cin >> optiune;
+        afiseazaMeniu();
+        if (!(std::cin >> optiune))
+            break;
+        curataLinie();
 
-        if (optiune == 1)
+        switch (optiune)
         {
+        case 1:
             std::cout << "\n" << cafenea << "\n";
-            std::cout << "Doriti sa continuati? : (Y/N)";
-            std::cin >> op2;
-            if (op2 == 'Y')
-                continue;
-            else if (op2 == 'N')
-                break;
-            else
-            {
-                std::cout << "Eroare!\n";
-                break;
-            }
-        }
-        else if (optiune == 2)
-        {
+            break;
+        case 2:
             cafenea.proceseazaComanda("Espresso");
-            std::cout << "Doriti sa continuati? : (Y/N)";
-            std::cin >> op2;
-            if (op2 == 'Y')
-                continue;
-            else if (op2 == 'N')
-                break;
-            else
-            {
-                std::cout << "Eroare!\n";
-                break;
-            }
-        }
-        else if (optiune == 3)
-        {
+            break;
+        case 3:
             cafenea.proceseazaComanda("Cappuccino");
-            std::cout << "Doriti sa continuati? : (Y/N)";
-            std::cin >> op2;
-            if (op2 == 'Y')
-                continue;
-            else if (op2 == 'N')
-                break;
-            else
-            {
-                std::cout << "Eroare!\n";
-                break;
-            }
-        }
-        else if (optiune == 4)
-        {
+            break;
+        case 4:
             cafenea.proceseazaComanda("Vanilla Latte");
-            std::cout << "Doriti sa continuati? : (Y/N)";
-            std::cin >> op2;
-            if (op2 == 'Y')
-                continue;
-            else if (op2 == 'N')
-                break;
-            else
-            {
-                std::cout << "Eroare!\n";
-                break;
-            }
-        }
-        else if (optiune == 5)
+            break;
+        case 5:
         {
             std::string numeProdus;
             std::cout << "Introdu numele exact al bauturii de verificat: ";
-            std::cin >> numeProdus;
-
+            std::getline(std::cin, numeProdus);
             if (cafenea.poatePrepara(numeProdus))
-            {
                 std::cout << "[INFO] Exista stoc suficient pentru '" << numeProdus << "'.\n";
-                std::cout << "Doriti sa continuati? : (Y/N)";
-                std::cin >> op2;
-                if (op2 == 'Y')
-                    continue;
-                else if (op2 == 'N')
-                    break;
-                else
-                {
-                    std::cout << "Eroare!\n";
-                    break;
-                }
-            }
             else
-            {
-                std::cout << "[ATENTIE] Nu se poate prepara '" << numeProdus << "' (stoc insuficient sau produs inexistent).\n";
-            }
+                std::cout << "[ATENTIE] Nu se poate prepara '" << numeProdus
+                          << "' (stoc insuficient sau produs inexistent).\n";
+            break;
         }
-        else if (optiune == 6)
-        {
+        case 6:
             cafenea.afiseazaRaportProfitabilitate();
-            std::cout << "Doriti sa continuati? : (Y/N)";
-            std::cin >> op2;
-            if (op2 == 'Y')
-                continue;
-            else if (op2 == 'N')
-                break;
-            else
-            {
-                std::cout << "Eroare!\n";
-                break;
-            }
-        }
-        else if (optiune == 0)
+            break;
+        case 7:
         {
+            std::string ing;
+            double cant;
+            std::cout << "Ingredient: ";
+            std::getline(std::cin, ing);
+            std::cout << "Cantitate: ";
+            std::cin >> cant;
+            cafenea.reaprovizioneaza(ing, cant);
+            break;
+        }
+        case 0:
             std::cout << "\nInchidere aplicatie. La revedere!\n";
-        }
-        else
-        {
+            continue;
+        default:
             std::cout << "\nOptiune invalida! Incearca din nou.\n";
+            continue;
         }
-    }
 
+        if (!continua())
+            break;
+    }
     return 0;
 }
