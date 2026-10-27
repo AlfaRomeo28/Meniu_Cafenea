@@ -1,7 +1,4 @@
-
-
-## Descriere
-- ##- Sistem de Gestiune a unei Cafenele -
+- #  Sistem de Gestiune a unei Cafenele
 
 
 #### De ce am ales această tema?
