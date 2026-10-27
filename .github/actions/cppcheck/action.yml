@@ -5,12 +5,12 @@ runs:
   using: "composite"
   steps:
     - name: Cache cppcheck
-      # renovate: datasource=github-tags depName=actions/cache versioning=loose
+   
       uses: actions/cache/restore@v6.1.0
       id: cache-cppcheck
       with:
         path: cppcheck
-        key: cppcheck-${{ env.CPPCHECK_VER }}
+        key: cppcheck-${{ env.CPPCHECK_VER }}-v2
 
     - name: Install packages
       uses: ./.github/actions/install-packages
@@ -22,18 +22,19 @@ runs:
         bash ./scripts/build_cppcheck.sh -v ${CPPCHECK_VER}
 
     - name: Save cppcheck cache
-      # renovate: datasource=github-tags depName=actions/cache versioning=loose
+      
       uses: actions/cache/save@v6.1.0
       if: steps.cache-cppcheck.outputs.cache-hit != 'true'
       with:
         path: cppcheck
-        key: cppcheck-${{ env.CPPCHECK_VER }}
+        key: cppcheck-${{ env.CPPCHECK_VER }}-v2
 
     - name: Install cppcheck
       shell: bash
-      # this step is fast, no need for caching
+      
       run: |
         cd cppcheck
+        cmake --build build -j$(nproc)
         sudo cmake --install build
 
     - name: Configure CMake
