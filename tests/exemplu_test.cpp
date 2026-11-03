@@ -913,6 +913,243 @@ namespace TestSuite
         assert(liniiGasite > 0);
         std::remove(fisierRaport.c_str());
     }
+void test51_PromotieConstructoriSiStare()
+    {
+        std::cout << "[TEST 51] Promotie constructori, getteri si stare...\n";
+        Promotie oprita("Happy Hour", "Espresso", 20.0);
+        assert(oprita.getNume() == "Happy Hour");
+        assert(oprita.getProdusVizat() == "Espresso");
+        assert(aproapeEgal(oprita.getProcent(), 20.0));
+        assert(!oprita.esteActiva());
+ 
+        Promotie pornita("Weekend", "Latte", 15.0, true);
+        assert(pornita.esteActiva());
+ 
+        oprita.activeaza();
+        assert(oprita.esteActiva());
+        oprita.dezactiveaza();
+        assert(!oprita.esteActiva());
+    }
+ 
+    void test52_PromotiePretRedusSiEconomie()
+    {
+        std::cout << "[TEST 52] Promotie calcul pret redus si economie...\n";
+        Promotie promo("Happy Hour", "Espresso", 20.0);
+ 
+        assert(!promo.aplicabila("Espresso"));
+        assert(aproapeEgal(promo.economie(10.0, 3), 0.0));
+ 
+        promo.activeaza();
+        assert(promo.aplicabila("Espresso"));
+        assert(!promo.aplicabila("Cappuccino"));
+        assert(aproapeEgal(promo.calculeazaPretRedus(10.0), 8.0));
+        assert(aproapeEgal(promo.economie(10.0, 3), 6.0));
+        assert(aproapeEgal(promo.economie(10.0, 0), 0.0));
+    }
+ 
+    void test53_PromotieValidariExceptii()
+    {
+        std::cout << "[TEST 53] Promotie validari prin exceptii...\n";
+        bool arunca = false;
+ 
+        try { Promotie p("", "Espresso", 10.0); } catch (const std::invalid_argument&) { arunca = true; }
+        assert(arunca);
+ 
+        arunca = false;
+        try { Promotie p("Promo", "", 10.0); } catch (const std::invalid_argument&) { arunca = true; }
+        assert(arunca);
+ 
+        arunca = false;
+        try { Promotie p("Promo", "Espresso", 0.0); } catch (const std::invalid_argument&) { arunca = true; }
+        assert(arunca);
+ 
+        arunca = false;
+        try { Promotie p("Promo", "Espresso", 95.0, true); } catch (const std::invalid_argument&) { arunca = true; }
+        assert(arunca);
+ 
+        arunca = false;
+        Promotie ok("Promo", "Espresso", 10.0);
+        try { ok.calculeazaPretRedus(-1.0); } catch (const std::invalid_argument&) { arunca = true; }
+        assert(arunca);
+    }
+ 
+    void test54_PromotieAfisareStream()
+    {
+        std::cout << "[TEST 54] Promotie operator<< ...\n";
+        Promotie promo("Happy Hour", "Espresso", 20.0);
+        std::ostringstream ss;
+        ss << promo;
+        assert(ss.str().find("Happy Hour") != std::string::npos);
+        assert(ss.str().find("oprita") != std::string::npos);
+ 
+        promo.activeaza();
+        std::ostringstream ss2;
+        ss2 << promo;
+        assert(ss2.str().find("ACTIVA") != std::string::npos);
+    }
+ 
+    void test55_RaportFinanciarGetteriSiFormule()
+    {
+        std::cout << "[TEST 55] RaportFinanciar getteri si formule...\n";
+        RaportFinanciar r(100.0, 10.0, 40.0, 30.0, 4);
+        assert(aproapeEgal(r.getIncasari(), 100.0));
+        assert(aproapeEgal(r.getReduceri(), 10.0));
+        assert(aproapeEgal(r.getCostMateriePrima(), 40.0));
+        assert(aproapeEgal(r.getCheltuieliReaprovizionare(), 30.0));
+        assert(r.getNumarComenzi() == 4);
+ 
+        assert(aproapeEgal(r.profitBrut(), 60.0));
+        assert(aproapeEgal(r.fluxNumerar(), 70.0));
+        assert(aproapeEgal(r.marjaBruta(), 60.0));
+        assert(aproapeEgal(r.incasarePerComanda(), 25.0));
+        assert(aproapeEgal(r.ponderePierderiDinReduceri(), 10.0 / 110.0 * 100.0));
+        assert(r.interpretare() == "Profitabila");
+    }
+ 
+    void test56_RaportFinanciarInterpretareCazuri()
+    {
+        std::cout << "[TEST 56] RaportFinanciar interpretare pe cazuri...\n";
+        RaportFinanciar fara(0.0, 0.0, 0.0, 0.0, 0);
+        assert(fara.interpretare() == "Nu exista inca vanzari");
+        assert(aproapeEgal(fara.marjaBruta(), 0.0));
+        assert(aproapeEgal(fara.incasarePerComanda(), 0.0));
+        assert(aproapeEgal(fara.ponderePierderiDinReduceri(), 0.0));
+ 
+        RaportFinanciar pierdere(10.0, 0.0, 20.0, 0.0, 1);
+        assert(pierdere.interpretare() == "In pierdere");
+ 
+        RaportFinanciar dinRezerve(100.0, 0.0, 40.0, 150.0, 5);
+        assert(dinRezerve.interpretare() == "Profitabila, dar stocul nou a fost platit din rezerve");
+    }
+ 
+    void test57_RaportFinanciarValidariSiFisier()
+    {
+        std::cout << "[TEST 57] RaportFinanciar validari si salvare...\n";
+        bool arunca = false;
+        try { RaportFinanciar r(-1.0, 0.0, 0.0, 0.0, 0); } catch (const std::invalid_argument&) { arunca = true; }
+        assert(arunca);
+ 
+        arunca = false;
+        try { RaportFinanciar r(1.0, 0.0, 0.0, 0.0, -2); } catch (const std::invalid_argument&) { arunca = true; }
+        assert(arunca);
+ 
+        RaportFinanciar r(88.0, 2.0, 27.0, 15.0, 4);
+        std::ostringstream ss;
+        ss << r;
+        assert(ss.str().find("RAPORT FINANCIAR") != std::string::npos);
+        assert(ss.str().find("Profitabila") != std::string::npos);
+ 
+        const std::string fisier = "test_raport_financiar_temp.txt";
+        assert(r.salveazaInFisier(fisier));
+        std::ifstream fin(fisier.c_str());
+        assert(fin.is_open());
+        std::string linie;
+        bool gasit = false;
+        while (std::getline(fin, linie))
+            if (linie.find("profit_brut;") == 0)
+                gasit = true;
+        fin.close();
+        assert(gasit);
+        std::remove(fisier.c_str());
+    }
+ 
+    void test58_CafeneaPromotiiInComanda()
+    {
+        std::cout << "[TEST 58] Cafenea promotii aplicate la comanda...\n";
+        Cafenea shop("PromoShop", 500.0);
+        shop.adaugaIngredient(Ingrediente("Cafea Boabe", 500.0, "g", 0.10));
+        const CReteta comp[1] = { CReteta("Cafea Boabe", 18.0) };
+        shop.adaugaReteta(Reteta("Espresso", 10.0, comp, 1));
+ 
+        shop.adaugaPromotie(Promotie("Happy Hour", "Espresso", 20.0));
+        assert(shop.seteazaStarePromotie("Happy Hour", false));
+ 
+        Client ana("Ana");
+        std::vector<std::string> lista(1, "Espresso");
+        assert(shop.plaseazaComanda(ana, lista));
+        assert(aproapeEgal(shop.getIstoric().totalIncasari(), 10.0));
+ 
+        assert(shop.seteazaStarePromotie("Happy Hour", true));
+        Client bob("Bob");
+        assert(shop.plaseazaComanda(bob, lista));
+        assert(aproapeEgal(shop.getIstoric().totalIncasari(), 18.0));
+ 
+        assert(!shop.seteazaStarePromotie("Inexistenta", true));
+        shop.afiseazaPromotii();
+ 
+        RaportFinanciar raport = shop.raportFinanciar();
+        assert(raport.getNumarComenzi() == 2);
+        assert(aproapeEgal(raport.getIncasari(), 18.0));
+        assert(aproapeEgal(raport.getCostMateriePrima(), 3.6));
+    }
+ 
+    void test59_CafeneaPromotiiInvalide()
+    {
+        std::cout << "[TEST 59] Cafenea promotii invalide prin exceptii...\n";
+        Cafenea shop("PromoShop2", 100.0);
+        shop.adaugaIngredient(Ingrediente("Cafea Boabe", 100.0, "g", 0.10));
+        const CReteta comp[1] = { CReteta("Cafea Boabe", 18.0) };
+        shop.adaugaReteta(Reteta("Espresso", 10.0, comp, 1));
+ 
+        bool arunca = false;
+        try { shop.adaugaPromotie(Promotie("Mocha Promo", "Mocha", 10.0)); }
+        catch (const std::invalid_argument&) { arunca = true; }
+        assert(arunca);
+ 
+        shop.adaugaPromotie(Promotie("Promo", "Espresso", 10.0));
+        arunca = false;
+        try { shop.adaugaPromotie(Promotie("Promo", "Espresso", 15.0)); }
+        catch (const std::invalid_argument&) { arunca = true; }
+        assert(arunca);
+    }
+ 
+    void test60_CafeneaIncarcareSiSalvareStocFormatCorect()
+    {
+        std::cout << "[TEST 60] Cafenea incarcare/salvare stoc (format cu ';')...\n";
+        const std::string fisierIn = "stoc_test_in.txt";
+        std::ofstream fout(fisierIn.c_str());
+        fout << "# denumire;stoc;unitate;pret_unitar\n";
+        fout << "Cafea Boabe;300;g;0.15\n";
+        fout << "\n";
+        fout << "Lapte Integral;1000;ml;0.01\n";
+        fout << "linie fara separatori\n";
+        fout << "Sirop;abc;ml;0.05\n";
+        fout.close();
+ 
+        Cafenea shop("StocShop", 100.0);
+        assert(shop.incarcaIngredienteDinFisier(fisierIn) == 2);
+        assert(shop.incarcaIngredienteDinFisier("fisier_care_nu_exista.txt") == -1);
+ 
+        const std::string fisierOut = "stoc_test_out.txt";
+        assert(shop.salveazaStocInFisier(fisierOut));
+ 
+        Cafenea alta("AltaCafenea", 100.0);
+        assert(alta.incarcaIngredienteDinFisier(fisierOut) == 2);
+ 
+        std::remove(fisierIn.c_str());
+        std::remove(fisierOut.c_str());
+    }
+ 
+    void test61_ClientPraguriNivel()
+    {
+        std::cout << "[TEST 61] Client praguri exacte de nivel...\n";
+        Client c("Prag");
+        c.inregistreazaComanda(29.0);
+        assert(c.getNivel() == "Standard");
+        assert(aproapeEgal(c.getReducere(), 0.0));
+ 
+        c.inregistreazaComanda(1.0);
+        assert(c.getNivel() == "Argint");
+        assert(aproapeEgal(c.getReducere(), 5.0));
+ 
+        c.inregistreazaComanda(70.0);
+        assert(c.getNivel() == "Aur");
+        assert(aproapeEgal(c.getReducere(), 10.0));
+ 
+        bool arunca = false;
+        try { c.inregistreazaComanda(-5.0); } catch (const std::invalid_argument&) { arunca = true; }
+        assert(arunca);
+    }
 }
 
 int main()
@@ -976,7 +1213,7 @@ int main()
     TestSuite::test39_CafeneaIncarcareFisierFormatSimulat();
     TestSuite::test40_CafeneaIntegritateStareSiIstoricComplet();
 
-    // Modul 10: Suitele Avansate (41 - 50)
+    
     TestSuite::test41_IngredienteConsumPanaLaEpuizareTotala();
     TestSuite::test42_CRetetaStresVectorSiComparatii();
     TestSuite::test43_RetetaMultiplaCuSapteIngrediente();
@@ -987,6 +1224,17 @@ int main()
     TestSuite::test48_IstoricVanzariVerificareStatisticiComplet();
     TestSuite::test49_CafeneaStresSuteDeComenziSiReaprovizionari();
     TestSuite::test50_CafeneaSalvareRaportSiVerificareIntegralaLinii();
+    TestSuite::test51_PromotieConstructoriSiStare();
+    TestSuite::test52_PromotiePretRedusSiEconomie();
+    TestSuite::test53_PromotieValidariExceptii();
+    TestSuite::test54_PromotieAfisareStream();
+   TestSuite::test55_RaportFinanciarGetteriSiFormule();
+    TestSuite::test56_RaportFinanciarInterpretareCazuri();
+    TestSuite::test57_RaportFinanciarValidariSiFisier();
+   TestSuite::test58_CafeneaPromotiiInComanda();
+    TestSuite::test59_CafeneaPromotiiInvalide();
+    TestSuite::test60_CafeneaIncarcareSiSalvareStocFormatCorect();
+    TestSuite::test61_ClientPraguriNivel();
 
 
     return 0;
