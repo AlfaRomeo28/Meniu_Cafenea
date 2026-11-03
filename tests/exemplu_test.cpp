@@ -386,7 +386,7 @@ namespace TestSuite
     }
 
     // =========================================================================
-    // MODUL 8: CAFENEA SI INTEGRARE INITIALA (Suitele 26 - 30)
+    // MODUL 8: CAFENEA (Suitele 26 - 30)
     // =========================================================================
 
     void test26_CafeneaIncarcareIngredienteSiStoc()
@@ -489,7 +489,7 @@ namespace TestSuite
     }
 
     // =========================================================================
-    // MODUL 9: EXTINDERE AVANSATA (Suitele 31 - 40: +300 Linii C++)
+    // MODUL 9: EXTINDERE SUPLIMENTARA (Suitele 31 - 40)
     // =========================================================================
 
     void test31_IngredienteConsumFinSiReumplereRepetata()
@@ -617,7 +617,6 @@ namespace TestSuite
         bool servitCap = shopResurse.proceseazaComanda("Cappuccino");
         assert(servitCap == true);
 
-        // Au ramas 12g de cafea si 0ml lapte
         assert(shopResurse.poatePrepara("Cappuccino") == false);
         assert(shopResurse.poatePrepara("Espresso") == false);
 
@@ -689,56 +688,302 @@ namespace TestSuite
         assert(aproapeEgal(istoricFinal.totalIncasari(), 40.0));
         assert(aproapeEgal(istoricFinal.valoareMedieComanda(), 8.0));
     }
+
+    // =========================================================================
+    // MODUL 10: STRES, PERSISTENTA SI SCENARII EXTREME (Suitele 41 - 50: +400 Linii)
+    // =========================================================================
+
+    void test41_IngredienteConsumPanaLaEpuizareTotala()
+    {
+        std::cout << "[TEST 41] Ingrediente cicluri repetate de golire si umplere...\n";
+        Ingrediente cardamon("Cardamon Macinat", 50.0, "g", 0.40);
+        assert(cardamon.getdenumire() == "Cardamon Macinat");
+
+        for (int iteratie = 0; iteratie < 10; ++iteratie)
+        {
+            assert(aproapeEgal(cardamon.getcantitateDisponibila(), 50.0));
+            bool okConsum = cardamon.consuma(50.0);
+            assert(okConsum == true);
+            assert(aproapeEgal(cardamon.getcantitateDisponibila(), 0.0));
+            assert(cardamon.consuma(1.0) == false);
+
+            cardamon.adaugaStoc(50.0);
+        }
+        assert(aproapeEgal(cardamon.getcantitateDisponibila(), 50.0));
+    }
+
+    void test42_CRetetaStresVectorSiComparatii()
+    {
+        std::cout << "[TEST 42] CReteta manipulare colectii mari...\n";
+        std::vector<CReteta> colectieComponente;
+        for (int i = 1; i <= 20; ++i)
+        {
+            std::ostringstream ssNume;
+            ssNume << "IngredientCompus_" << i;
+            colectieComponente.push_back(CReteta(ssNume.str(), static_cast<double>(i * 5)));
+        }
+
+        assert(colectieComponente.size() == 20);
+        for (std::size_t idx = 0; idx < colectieComponente.size(); ++idx)
+        {
+            assert(colectieComponente[idx].getcantitate() > 0.0);
+            std::ostringstream ssOut;
+            ssOut << colectieComponente[idx];
+            assert(!ssOut.str().empty());
+        }
+    }
+
+    void test43_RetetaMultiplaCuSapteIngrediente()
+    {
+        std::cout << "[TEST 43] Reteta cu 7 componente si cost de productie...\n";
+        CReteta compSpecial[7] = {
+            CReteta("Cafea Boabe", 22.0),
+            CReteta("Lapte Soia", 180.0),
+            CReteta("Sirop Fistic", 20.0),
+            CReteta("Sirop Vanilie", 15.0),
+            CReteta("Pudra Matcha", 5.0),
+            CReteta("Frisca Vegana", 40.0),
+            CReteta("Topping Ciocolata", 10.0)
+        };
+
+        Reteta monsterCoffee("Super Monster Blend", 32.0, compSpecial, 7);
+        assert(monsterCoffee.getNumarComponente() == 7);
+        assert(monsterCoffee.getDenumire() == "Super Monster Blend");
+        assert(aproapeEgal(monsterCoffee.getPretVanzare(), 32.0));
+
+        Ingrediente magazie[7] = {
+            Ingrediente("Cafea Boabe", 1000.0, "g", 0.15),
+            Ingrediente("Lapte Soia", 2000.0, "ml", 0.02),
+            Ingrediente("Sirop Fistic", 500.0, "ml", 0.08),
+            Ingrediente("Sirop Vanilie", 500.0, "ml", 0.05),
+            Ingrediente("Pudra Matcha", 200.0, "g", 0.30),
+            Ingrediente("Frisca Vegana", 800.0, "g", 0.04),
+            Ingrediente("Topping Ciocolata", 400.0, "g", 0.03)
+        };
+
+        double costProd = monsterCoffee.calculeazaCostProductie(magazie, 7);
+        assert(costProd > 0.0);
+        assert(costProd < monsterCoffee.getPretVanzare());
+    }
+
+    void test44_RetetaAutoAtribuireSiSecventeCopiere()
+    {
+        std::cout << "[TEST 44] Reteta lanturi de copiere si auto-atribuire multipla...\n";
+        CReteta c[2] = { CReteta("Boabe", 10.0), CReteta("Apa", 100.0) };
+        Reteta r1("Americano Mare", 12.0, c, 2);
+        Reteta r2("Dummy", 1.0, NULL, 0);
+        Reteta r3("Dummy2", 2.0, NULL, 0);
+
+        r3 = r2 = r1;
+        assert(r2.getDenumire() == "Americano Mare");
+        assert(r3.getDenumire() == "Americano Mare");
+        assert(r2.getNumarComponente() == 2);
+        assert(r3.getNumarComponente() == 2);
+
+        r3 = r3;
+        assert(r3.getDenumire() == "Americano Mare");
+        assert(r3.getNumarComponente() == 2);
+    }
+
+    void test45_LinieComandaCalculFinanciarValoriMari()
+    {
+        std::cout << "[TEST 45] LinieComanda volume comerciale mari...\n";
+        LinieComanda linieEnGros("Pachet Cafea Boabe 1kg", 50, 85.50);
+        assert(linieEnGros.getCantitate() == 50);
+        assert(aproapeEgal(linieEnGros.getPretUnitar(), 85.50));
+        assert(aproapeEgal(linieEnGros.getTotal(), 4275.0));
+
+        linieEnGros.adaugaCantitate(50);
+        assert(linieEnGros.getCantitate() == 100);
+        assert(aproapeEgal(linieEnGros.getTotal(), 8550.0));
+    }
+
+    void test46_ComandaBonMareCuMulteProduseSiReducere()
+    {
+        std::cout << "[TEST 46] Comanda bon de restaurant cu multe linii...\n";
+        Comanda comandaMasa(500, "Masa Protocol");
+
+        for (int p = 1; p <= 15; ++p)
+        {
+            std::ostringstream prodStream;
+            prodStream << "Bautura_Protocol_" << p;
+            comandaMasa.adaugaLinie(prodStream.str(), 10.0 + p, 2);
+        }
+
+        assert(comandaMasa.getLinii().size() == 15);
+        assert(comandaMasa.getNumarProduse() == 30);
+        assert(comandaMasa.getSubtotal() > 0.0);
+
+        comandaMasa.aplicaReducere(15.0);
+        assert(aproapeEgal(comandaMasa.getReducere(), 15.0));
+        double redAsteptata = comandaMasa.getSubtotal() * 0.15;
+        assert(aproapeEgal(comandaMasa.getValoareReducere(), redAsteptata));
+        assert(aproapeEgal(comandaMasa.getTotal(), comandaMasa.getSubtotal() - redAsteptata));
+    }
+
+    void test47_ClientTranzactiiSuccesiveSiPuncteAcumulate()
+    {
+        std::cout << "[TEST 47] Client acumulare continua pe 25 de tranzactii...\n";
+        Client fidel("Ioan Slavici");
+        assert(fidel.getNume() == "Ioan Slavici");
+
+        double totalCumulat = 0.0;
+        for (int comandaIdx = 1; comandaIdx <= 25; ++comandaIdx)
+        {
+            double suma = 20.0 + static_cast<double>(comandaIdx * 2);
+            fidel.inregistreazaComanda(suma);
+            totalCumulat += suma;
+            assert(fidel.getNumarComenzi() == comandaIdx);
+        }
+
+        assert(aproapeEgal(fidel.getTotalCheltuit(), totalCumulat));
+        assert(fidel.getPuncte() > 0.0);
+        std::string nivelFinal = fidel.getNivel();
+        assert(nivelFinal == "Standard" || nivelFinal == "Argint" || nivelFinal == "Aur");
+    }
+
+    void test48_IstoricVanzariVerificareStatisticiComplet()
+    {
+        std::cout << "[TEST 48] IstoricVanzari validari matematice pe incasari...\n";
+        IstoricVanzari istoricAudit("Audit_Cafenea");
+
+        double sumaAsteptataIncasari = 0.0;
+        double sumaAsteptataReduceri = 0.0;
+
+        for (int idCmd = 1; idCmd <= 10; ++idCmd)
+        {
+            Comanda cmd(idCmd, "Client Test");
+            cmd.adaugaLinie("Espresso", 10.0, 1);
+            if (idCmd % 2 == 0)
+            {
+                cmd.aplicaReducere(10.0); // 1 leu reducere
+                sumaAsteptataReduceri += 1.0;
+                sumaAsteptataIncasari += 9.0;
+            }
+            else
+            {
+                sumaAsteptataIncasari += 10.0;
+            }
+            istoricAudit.adaugaComanda(cmd);
+        }
+
+        assert(istoricAudit.getNumarComenzi() == 10);
+        assert(aproapeEgal(istoricAudit.totalIncasari(), sumaAsteptataIncasari));
+        assert(aproapeEgal(istoricAudit.totalReduceri(), sumaAsteptataReduceri));
+        assert(aproapeEgal(istoricAudit.valoareMedieComanda(), sumaAsteptataIncasari / 10.0));
+    }
+
+    void test49_CafeneaStresSuteDeComenziSiReaprovizionari()
+    {
+        std::cout << "[TEST 49] Cafenea rulaj masiv: 100 comenzi cu reaprovizionare...\n";
+        Cafenea highTrafficShop("MegaDriveCoffee", 10000.0);
+
+        highTrafficShop.adaugaIngredient(Ingrediente("Cafea Boabe", 1800.0, "g", 0.10));
+        CReteta comp[1] = { CReteta("Cafea Boabe", 18.0) };
+        highTrafficShop.adaugaReteta(Reteta("Espresso", 10.0, comp, 1));
+
+        for (int i = 0; i < 100; ++i)
+        {
+            assert(highTrafficShop.poatePrepara("Espresso") == true);
+            bool servit = highTrafficShop.proceseazaComanda("Espresso");
+            assert(servit == true);
+        }
+
+        assert(highTrafficShop.poatePrepara("Espresso") == false);
+        assert(highTrafficShop.proceseazaComanda("Espresso") == false);
+
+        bool aprovizionat = highTrafficShop.reaprovizioneaza("Cafea Boabe", 900.0);
+        assert(aprovizionat == true);
+        assert(highTrafficShop.poatePrepara("Espresso") == true);
+        assert(highTrafficShop.getIstoric().getNumarComenzi() == 100);
+    }
+
+    void test50_CafeneaSalvareRaportSiVerificareIntegralaLinii()
+    {
+        std::cout << "[TEST 50] Cafenea salvare raport final si validare integritate fisier...\n";
+        Cafenea enterpriseShop("Enterprise_Coffee", 5000.0);
+        enterpriseShop.adaugaIngredient(Ingrediente("Cafea Boabe", 500.0, "g", 0.12));
+        enterpriseShop.adaugaIngredient(Ingrediente("Lapte", 2000.0, "ml", 0.01));
+
+        CReteta cCap[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte", 150.0) };
+        enterpriseShop.adaugaReteta(Reteta("Cappuccino", 16.0, cCap, 2));
+
+        Client clientVIP("VIP Customer");
+        std::vector<std::string> listaVIP;
+        listaVIP.push_back("Cappuccino");
+        listaVIP.push_back("Cappuccino");
+
+        enterpriseShop.plaseazaComanda(clientVIP, listaVIP);
+
+        const std::string fisierRaport = "raport_enterprise_test.txt";
+        bool salvatCuSucces = enterpriseShop.salveazaRaportVanzari(fisierRaport);
+        assert(salvatCuSucces == true);
+
+        std::ifstream fileRead(fisierRaport.c_str());
+        assert(fileRead.is_open());
+        int liniiGasite = 0;
+        std::string buffer;
+        while (std::getline(fileRead, buffer))
+        {
+            ++liniiGasite;
+        }
+        fileRead.close();
+        assert(liniiGasite > 0);
+        std::remove(fisierRaport.c_str());
+    }
 }
 
 int main()
 {
-   
+ 
 
-
+    // Modul 1: Ingrediente
     TestSuite::test01_IngredienteConstructoriSiGetteri();
     TestSuite::test02_IngredienteConsumSiStoc();
     TestSuite::test03_IngredienteConsumLimitaExacta();
     TestSuite::test04_IngredienteAfisareStream();
 
-
+    // Modul 2: CReteta
     TestSuite::test05_CRetetaConstructoriSiGetteri();
     TestSuite::test06_CRetetaCopiereSiAtribuire();
     TestSuite::test07_CRetetaAfisareStream();
 
+    // Modul 3: Reteta
     TestSuite::test08_RetetaConstructoriSiGetteri();
     TestSuite::test09_RetetaRegulaCelorTreiCopiereAdanca();
     TestSuite::test10_RetetaCostProductie();
     TestSuite::test11_RetetaAfisareStream();
 
-
+    // Modul 4: LinieComanda
     TestSuite::test12_LinieComandaConstructoriSiTotal();
     TestSuite::test13_LinieComandaAdaugaCantitate();
     TestSuite::test14_LinieComandaAfisareStream();
 
+    // Modul 5: Comanda
     TestSuite::test15_ComandaAdaugareLiniiSiCalculSubtotal();
     TestSuite::test16_ComandaCumulareLiniiIdentice();
     TestSuite::test17_ComandaAplicareReducere();
     TestSuite::test18_ComandaAfisareBonStream();
 
+    // Modul 6: Client
     TestSuite::test19_ClientConstructoriSiDateInitiale();
     TestSuite::test20_ClientInregistrareComandaSiPuncte();
     TestSuite::test21_ClientAvansareNivelSiReducere();
     TestSuite::test22_ClientAfisareStream();
 
-
+    // Modul 7: IstoricVanzari
     TestSuite::test23_IstoricVanzariInregistrareSiStatistici();
     TestSuite::test24_IstoricVanzariGasesteComandaSiTop();
     TestSuite::test25_IstoricVanzariPersistentaFisier();
 
-
+    // Modul 8: Cafenea
     TestSuite::test26_CafeneaIncarcareIngredienteSiStoc();
     TestSuite::test27_CafeneaPoatePreparaSiCatalogRetete();
     TestSuite::test28_CafeneaFluxProceseazaComandaDirecta();
     TestSuite::test29_CafeneaPlaseazaComandaClientCompusa();
     TestSuite::test30_CafeneaSalvareRaportSiAfisare();
 
- 
+    // Modul 9: Suitele Extinse (31 - 40)
     TestSuite::test31_IngredienteConsumFinSiReumplereRepetata();
     TestSuite::test32_RetetaComplexaMultiComponente();
     TestSuite::test33_LinieComandaOperatiiSuccesiveSiPrecizie();
@@ -750,6 +995,19 @@ int main()
     TestSuite::test39_CafeneaIncarcareFisierFormatSimulat();
     TestSuite::test40_CafeneaIntegritateStareSiIstoricComplet();
 
+    // Modul 10: Suitele Avansate (+400 Linii C++, 41 - 50)
+    TestSuite::test41_IngredienteConsumPanaLaEpuizareTotala();
+    TestSuite::test42_CRetetaStresVectorSiComparatii();
+    TestSuite::test43_RetetaMultiplaCuSapteIngrediente();
+    TestSuite::test44_RetetaAutoAtribuireSiSecventeCopiere();
+    TestSuite::test45_LinieComandaCalculFinanciarValoriMari();
+    TestSuite::test46_ComandaBonMareCuMulteProduseSiReducere();
+    TestSuite::test47_ClientTranzactiiSuccesiveSiPuncteAcumulate();
+    TestSuite::test48_IstoricVanzariVerificareStatisticiComplet();
+    TestSuite::test49_CafeneaStresSuteDeComenziSiReaprovizionari();
+    TestSuite::test50_CafeneaSalvareRaportSiVerificareIntegralaLinii();
+
+   
 
     return 0;
 }
