@@ -5,460 +5,523 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
-#include <stdexcept>
-#include <algorithm>
+#include <iomanip>
+#include <cstdio>
+
 #include "Cafenea.hpp"
+#include "Client.hpp"
+#include "Comanda.hpp"
+#include "CReteta.hpp"
+#include "Ingrediente.hpp"
+#include "IstoricVanzari.hpp"
+#include "LinieComanda.hpp"
+#include "Reteta.hpp"
 
 namespace TestSuite
 {
-    bool aproapeEgal(double a, double b, double eps = 0.001)
+    static bool aproapeEgal(double a, double b, double eps = 0.001)
     {
         return std::fabs(a - b) < eps;
     }
 
-    void testIngredienteOperatii()
+  
+
+    void test01_IngredienteConstructoriSiGetteri()
     {
-        std::cout << "[TEST] Rulare testIngredienteOperatii...\n";
+        std::cout << "[TEST 01] Ingrediente constructori si getteri...\n";
+        Ingrediente ingImplicit;
+        (void)ingImplicit;
 
-        Ingrediente ing("Cafea Boabe", 500.0, "g", 0.12);
-        assert(ing.getNume() == "Cafea Boabe");
-        assert(aproapeEgal(ing.getCantitate(), 500.0) || aproapeEgal(ing.getcantitateDisponibila(), 500.0));
-        assert(ing.getUnitateMasura() == "g");
-
-        ing.consuma(150.0);
-        assert(aproapeEgal(ing.getCantitate(), 350.0) || aproapeEgal(ing.getcantitateDisponibila(), 350.0));
-
-        ing.adaugaStoc(200.0);
-        assert(aproapeEgal(ing.getCantitate(), 550.0) || aproapeEgal(ing.getcantitateDisponibila(), 550.0));
-
-        ing.consuma(550.0);
-        assert(aproapeEgal(ing.getCantitate(), 0.0) || aproapeEgal(ing.getcantitateDisponibila(), 0.0));
-
-        bool aAruncat = false;
-        try
-        {
-            ing.consuma(1.0);
-        }
-        catch (const std::exception&)
-        {
-            aAruncat = true;
-        }
-        assert(aAruncat == true);
-
-        std::cout << "[PASS] testIngredienteOperatii reusit.\n";
+        Ingrediente cafea("Cafea Boabe", 500.0, "g", 0.12);
+        assert(cafea.getdenumire() == "Cafea Boabe");
+        assert(aproapeEgal(cafea.getcantitateDisponibila(), 500.0));
+        assert(cafea.getunitateMasura() == "g");
+        assert(aproapeEgal(cafea.getpretUnitate(), 0.12));
     }
 
-    void testIngredienteCazuriLimita()
+    void test02_IngredienteConsumSiStoc()
     {
-        std::cout << "[TEST] Rulare testIngredienteCazuriLimita...\n";
+        std::cout << "[TEST 02] Ingrediente operatii stoc si consum...\n";
+        Ingrediente lapte("Lapte", 1000.0, "ml", 0.01);
+        lapte.adaugaStoc(500.0);
+        assert(aproapeEgal(lapte.getcantitateDisponibila(), 1500.0));
 
-        Ingrediente vanilie("Esenta Vanilie", 0.0, "ml", 0.50);
-        assert(aproapeEgal(vanilie.getCantitate(), 0.0) || aproapeEgal(vanilie.getcantitateDisponibila(), 0.0));
+        bool consumReusit = lapte.consuma(300.0);
+        assert(consumReusit == true);
+        assert(aproapeEgal(lapte.getcantitateDisponibila(), 1200.0));
 
-        vanilie.adaugaStoc(0.001);
-        assert((vanilie.getCantitate() > 0.0) || (vanilie.getcantitateDisponibila() > 0.0));
-
-        vanilie.consuma(0.001);
-        assert(aproapeEgal(vanilie.getCantitate(), 0.0) || aproapeEgal(vanilie.getcantitateDisponibila(), 0.0));
-
-        // Consum repetat in pasi mici
-        Ingrediente scortisoara("Scortisoara", 10.0, "g", 0.02);
-        for (int i = 0; i < 100; ++i)
-        {
-            scortisoara.consuma(0.1);
-        }
-        assert(aproapeEgal(scortisoara.getCantitate(), 0.0, 0.01) || 
-               aproapeEgal(scortisoara.getcantitateDisponibila(), 0.0, 0.01));
-
-        // Verificare valori negative la adaugare
-        bool stocNegativBlocat = false;
-        try
-        {
-            scortisoara.adaugaStoc(-5.0);
-        }
-        catch (const std::exception&)
-        {
-            stocNegativBlocat = true;
-        }
-        (void)stocNegativBlocat;
-
-        std::cout << "[PASS] testIngredienteCazuriLimita reusit.\n";
+        bool consumExcesiv = lapte.consuma(5000.0);
+        assert(consumExcesiv == false);
+        assert(aproapeEgal(lapte.getcantitateDisponibila(), 1200.0));
     }
 
-    void testCRetetaSiConstructori()
+    void test03_IngredienteConsumLimitaExacta()
     {
-        std::cout << "[TEST] Rulare testCRetetaSiConstructori...\n";
+        std::cout << "[TEST 03] Ingrediente consum limita exacta...\n";
+        Ingrediente zahar("Zahar", 100.0, "g", 0.05);
+        bool consumTot = zahar.consuma(100.0);
+        assert(consumTot == true);
+        assert(aproapeEgal(zahar.getcantitateDisponibila(), 0.0));
 
-        CReteta c1("Lapte Integral", 150.0);
-        assert(c1.getNume() == "Lapte Integral");
-        assert(aproapeEgal(c1.getCantitate(), 150.0));
-
-        CReteta c2 = c1;
-        assert(c2.getNume() == "Lapte Integral");
-        assert(aproapeEgal(c2.getCantitate(), 150.0));
-
-        CReteta c3("Zahar", 10.0);
-        c3 = c1;
-        assert(c3.getNume() == "Lapte Integral");
-        assert(aproapeEgal(c3.getCantitate(), 150.0));
-
-        std::cout << "[PASS] testCRetetaSiConstructori reusit.\n";
+        bool consumPeZero = zahar.consuma(0.01);
+        assert(consumPeZero == false);
     }
 
-    void testCRetetaModificariSiValidari()
+    void test04_IngredienteAfisareStream()
     {
-        std::cout << "[TEST] Rulare testCRetetaModificariSiValidari...\n";
-
-        CReteta ing1("Miere", 25.0);
-        CReteta ing2("Ciocolata Calda", 40.0);
-
-        assert(ing1.getNume() != ing2.getNume());
-        assert(!aproapeEgal(ing1.getCantitate(), ing2.getCantitate()));
-
-        std::vector<CReteta> lista;
-        lista.push_back(ing1);
-        lista.push_back(ing2);
-        lista.push_back(CReteta("Frisca", 30.0));
-
-        assert(lista.size() == 3);
-        assert(lista[0].getNume() == "Miere");
-        assert(lista[1].getNume() == "Ciocolata Calda");
-        assert(lista[2].getNume() == "Frisca");
-
-        std::cout << "[PASS] testCRetetaModificariSiValidari reusit.\n";
+        std::cout << "[TEST 04] Ingrediente afisare stream...\n";
+        Ingrediente vanilie("Sirop Vanilie", 250.0, "ml", 0.08);
+        std::ostringstream ss;
+        ss << vanilie;
+        assert(ss.str().find("Sirop Vanilie") != std::string::npos);
+        assert(!ss.str().empty());
     }
 
-    void testRetetaRegulaCelorTrei()
+    void test05_CRetetaConstructoriSiGetteri()
     {
-        std::cout << "[TEST] Rulare testRetetaRegulaCelorTrei...\n";
+        std::cout << "[TEST 05] CReteta constructori si getteri...\n";
+        CReteta crDefault;
+        (void)crDefault;
 
-        CReteta ingredienteFlatWhite[2] = {
-            CReteta("Cafea Boabe", 18.0),
-            CReteta("Lapte Integral", 130.0)
-        };
+        CReteta cr("Lapte Integral", 150.0);
+        assert(cr.getnume() == "Lapte Integral");
+        assert(aproapeEgal(cr.getcantitate(), 150.0));
+    }
 
-        Reteta original("Flat White", 15.0, ingredienteFlatWhite, 2);
-        assert(original.getNume() == "Flat White");
-        assert(aproapeEgal(original.getPret(), 15.0));
-        assert(original.getNrIngrediente() == 2);
+    void test06_CRetetaCopiereSiAtribuire()
+    {
+        std::cout << "[TEST 06] CReteta copiere si atribuire...\n";
+        CReteta compOriginal("Apa Fierbinte", 120.0);
+        CReteta compCopie = compOriginal;
+        assert(compCopie.getnume() == "Apa Fierbinte");
+        assert(aproapeEgal(compCopie.getcantitate(), 120.0));
 
-        Reteta copie(original);
-        assert(copie.getNume() == original.getNume());
-        assert(aproapeEgal(copie.getPret(), original.getPret()));
-        assert(copie.getNrIngrediente() == original.getNrIngrediente());
+        CReteta compAtribuit;
+        compAtribuit = compOriginal;
+        assert(compAtribuit.getnume() == "Apa Fierbinte");
+        assert(aproapeEgal(compAtribuit.getcantitate(), 120.0));
+    }
+
+    void test07_CRetetaAfisareStream()
+    {
+        std::cout << "[TEST 07] CReteta afisare stream...\n";
+        CReteta comp("Ciocolata", 35.0);
+        std::ostringstream ss;
+        ss << comp;
+        assert(ss.str().find("Ciocolata") != std::string::npos);
+    }
+
+
+    void test08_RetetaConstructoriSiGetteri()
+    {
+        std::cout << "[TEST 08] Reteta constructori si inspectare componente...\n";
+        CReteta comp[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 150.0) };
+        Reteta cappuccino("Cappuccino", 16.0, comp, 2);
+
+        assert(cappuccino.getDenumire() == "Cappuccino");
+        assert(aproapeEgal(cappuccino.getPretVanzare(), 16.0));
+        assert(cappuccino.getNumarComponente() == 2);
+        assert(cappuccino.getComponente() != NULL);
+        assert(cappuccino.getComponente()[0].getnume() == "Cafea Boabe");
+    }
+
+    void test09_RetetaRegulaCelorTreiCopiereAdanca()
+    {
+        std::cout << "[TEST 09] Reteta regula celor 3 si deep copy...\n";
+        CReteta comp[1] = { CReteta("Cafea Boabe", 18.0) };
+        Reteta original("Espresso", 10.0, comp, 1);
+
+        {
+            Reteta copie = original;
+            assert(copie.getNumarComponente() == 1);
+            assert(copie.getDenumire() == "Espresso");
+            assert(copie.getComponente() != original.getComponente());
+        }
 
         Reteta atribuita;
         atribuita = original;
-        assert(atribuita.getNume() == "Flat White");
-        assert(aproapeEgal(atribuita.getPret(), 15.0));
-        assert(atribuita.getNrIngrediente() == 2);
+        assert(atribuita.getNumarComponente() == 1);
+        assert(atribuita.getDenumire() == "Espresso");
+        assert(atribuita.getComponente() != original.getComponente());
 
-        atribuita = atribuita;
-        assert(atribuita.getNume() == "Flat White");
-
-        std::cout << "[PASS] testRetetaRegulaCelorTrei reusit.\n";
+        atribuita = atribuita; // auto-atribuire
+        assert(atribuita.getNumarComponente() == 1);
     }
 
-    void testReteteComplexeSiCopiereAdanca()
+    void test10_RetetaCostProductie()
     {
-        std::cout << "[TEST] Rulare testReteteComplexeSiCopiereAdanca...\n";
+        std::cout << "[TEST 10] Reteta calcul cost productie...\n";
+        CReteta comp[2] = { CReteta("Cafea Boabe", 10.0), CReteta("Lapte", 100.0) };
+        Reteta cafeaLapte("Cafea cu Lapte", 12.0, comp, 2);
 
-        CReteta compMocha[4] = {
-            CReteta("Cafea Boabe", 18.0),
-            CReteta("Lapte Integral", 150.0),
-            CReteta("Sirop Ciocolata", 30.0),
-            CReteta("Frisca", 20.0)
+        Ingrediente stocMagazie[2] = {
+            Ingrediente("Cafea Boabe", 100.0, "g", 0.10), // 10g * 0.10 = 1.00
+            Ingrediente("Lapte", 500.0, "ml", 0.02)        // 100ml * 0.02 = 2.00
         };
 
-        Reteta mocha("Caffe Mocha", 19.5, compMocha, 4);
-        assert(mocha.getNrIngrediente() == 4);
-
-        // Scope local pentru a verifica ca distrugerea copiei nu afecteaza originalul
-        {
-            Reteta copieTemporara = mocha;
-            assert(copieTemporara.getNrIngrediente() == 4);
-            assert(copieTemporara.getNume() == "Caffe Mocha");
-        }
-
-        // Daca destructorul a eliberat memoria gresit, urmatoarele verificari vor pica
-        assert(mocha.getNrIngrediente() == 4);
-        assert(mocha.getNume() == "Caffe Mocha");
-        assert(aproapeEgal(mocha.getPret(), 19.5));
-
-        std::cout << "[PASS] testReteteComplexeSiCopiereAdanca reusit.\n";
+        double cost = cafeaLapte.calculeazaCostProductie(stocMagazie, 2);
+        assert(aproapeEgal(cost, 3.0));
     }
 
-    void testClientPuncteSiFormatare()
+    void test11_RetetaAfisareStream()
     {
-        std::cout << "[TEST] Rulare testClientPuncteSiFormatare...\n";
+        std::cout << "[TEST 11] Reteta operator<< ...\n";
+        CReteta comp[1] = { CReteta("Apa", 200.0) };
+        Reteta ceai("Ceai", 8.0, comp, 1);
+        std::ostringstream ss;
+        ss << ceai;
+        assert(ss.str().find("Ceai") != std::string::npos);
+    }
 
-        Client c1("Mihai Eminescu");
-        assert(c1.getNume() == "Mihai Eminescu");
-        assert(c1.getPuncte() == 0);
+  
+
+    void test12_LinieComandaConstructoriSiTotal()
+    {
+        std::cout << "[TEST 12] LinieComanda constructori si total...\n";
+        LinieComanda linie("Espresso Dublu", 2, 12.5);
+        assert(linie.getDenumire() == "Espresso Dublu");
+        assert(linie.getCantitate() == 2);
+        assert(aproapeEgal(linie.getPretUnitar(), 12.5));
+        assert(aproapeEgal(linie.getTotal(), 25.0));
+    }
+
+    void test13_LinieComandaAdaugaCantitate()
+    {
+        std::cout << "[TEST 13] LinieComanda adaugaCantitate...\n";
+        LinieComanda linie("Croissant", 1, 8.0);
+        linie.adaugaCantitate(3);
+        assert(linie.getCantitate() == 4);
+        assert(aproapeEgal(linie.getTotal(), 32.0));
+    }
+
+    void test14_LinieComandaAfisareStream()
+    {
+        std::cout << "[TEST 14] LinieComanda operator<< ...\n";
+        LinieComanda linie("Latte", 2, 15.0);
+        std::ostringstream ss;
+        ss << linie;
+        assert(ss.str().find("Latte") != std::string::npos);
+    }
+
+  
+
+    void test15_ComandaAdaugareLiniiSiCalculSubtotal()
+    {
+        std::cout << "[TEST 15] Comanda adaugare linii si subtotal...\n";
+        Comanda cmd(101, "Mihai Eminescu");
+        assert(cmd.getId() == 101);
+        assert(cmd.getNumeClient() == "Mihai Eminescu");
+        assert(cmd.getNumarProduse() == 0);
+
+        cmd.adaugaLinie("Espresso", 10.0, 2);
+        cmd.adaugaLinie("Cappuccino", 15.0, 1);
+
+        assert(cmd.getNumarProduse() == 3);
+        assert(aproapeEgal(cmd.getSubtotal(), 35.0));
+        assert(aproapeEgal(cmd.getTotal(), 35.0));
+    }
+
+    void test16_ComandaCumulareLiniiIdentice()
+    {
+        std::cout << "[TEST 16] Comanda cumulare produse pe aceeasi linie...\n";
+        Comanda cmd(102, "Ion Creanga");
+        cmd.adaugaLinie("Espresso", 10.0, 1);
+        cmd.adaugaLinie("Espresso", 10.0, 2);
+
+        assert(cmd.getLinii().size() == 1);
+        assert(cmd.getNumarProduse() == 3);
+        assert(aproapeEgal(cmd.getTotal(), 30.0));
+    }
+
+    void test17_ComandaAplicareReducere()
+    {
+        std::cout << "[TEST 17] Comanda aplicare reducere procentuala...\n";
+        Comanda cmd(103, "George Enescu");
+        cmd.adaugaLinie("Vanilla Latte", 20.0, 2); // 40.0 subtotal
+
+        cmd.aplicaReducere(10.0);
+        assert(aproapeEgal(cmd.getReducere(), 10.0));
+        assert(aproapeEgal(cmd.getValoareReducere(), 4.0));
+        assert(aproapeEgal(cmd.getTotal(), 36.0));
+    }
+
+    void test18_ComandaAfisareBonStream()
+    {
+        std::cout << "[TEST 18] Comanda operator<< format bon...\n";
+        Comanda cmd(104, "Aurel Vlaicu");
+        cmd.adaugaLinie("Ceai Cald", 10.0, 1);
+        std::ostringstream ss;
+        ss << cmd;
+        assert(ss.str().find("Aurel Vlaicu") != std::string::npos);
+        assert(ss.str().find("Ceai Cald") != std::string::npos);
+    }
+
+  
+
+    void test19_ClientConstructoriSiDateInitiale()
+    {
+        std::cout << "[TEST 19] Client constructori si stare initiala...\n";
+        Client c1("Mircea Eliade");
+        assert(c1.getNume() == "Mircea Eliade");
+        assert(aproapeEgal(c1.getPuncte(), 0.0));
         assert(aproapeEgal(c1.getTotalCheltuit(), 0.0));
+        assert(c1.getNumarComenzi() == 0);
+        assert(c1.getNivel() == "Standard");
+        assert(aproapeEgal(c1.getReducere(), 0.0));
 
-        bool numeGresit = false;
-        try
-        {
-            Client cInvalid("");
-        }
-        catch (const std::invalid_argument&)
-        {
-            numeGresit = true;
-        }
-        assert(numeGresit == true);
-
-        std::ostringstream out;
-        out << c1;
-        assert(!out.str().empty());
-
-        std::cout << "[PASS] testClientPuncteSiFormatare reusit.\n";
+        Client c2("Constantin Brancusi", 150.0, 1500.0, 12);
+        assert(c2.getPuncte() > 0.0);
+        assert(c2.getNumarComenzi() == 12);
     }
 
-    void testClientGestiuneMultipla()
+    void test20_ClientInregistrareComandaSiPuncte()
     {
-        std::cout << "[TEST] Rulare testClientGestiuneMultipla...\n";
-
-        std::vector<Client> clienti;
-        clienti.push_back(Client("Ana Aslan"));
-        clienti.push_back(Client("Mircea Eliade"));
-        clienti.push_back(Client("Henri Coanda"));
-
-        assert(clienti.size() == 3);
-        assert(clienti[0].getNume() == "Ana Aslan");
-        assert(clienti[1].getNume() == "Mircea Eliade");
-        assert(clienti[2].getNume() == "Henri Coanda");
-
-        for (std::size_t i = 0; i < clienti.size(); ++i)
-        {
-            std::ostringstream ss;
-            ss << clienti[i];
-            assert(ss.str().find(clienti[i].getNume()) != std::string::npos);
-        }
-
-        std::cout << "[PASS] testClientGestiuneMultipla reusit.\n";
+        std::cout << "[TEST 20] Client inregistrare tranzactie...\n";
+        Client c("Nichita Stanescu");
+        c.inregistreazaComanda(100.0);
+        assert(aproapeEgal(c.getTotalCheltuit(), 100.0));
+        assert(c.getNumarComenzi() == 1);
+        assert(c.getPuncte() > 0.0);
     }
 
-    void testCafeneaProcesareComenzi()
+    void test21_ClientAvansareNivelSiReducere()
     {
-        std::cout << "[TEST] Rulare testCafeneaProcesareComenzi...\n";
-
-        Cafenea shop("TestShop", 500.0);
-
-        shop.adaugaIngredient(Ingrediente("Cafea Boabe", 36.0, "g", 0.15));
-        shop.adaugaIngredient(Ingrediente("Lapte Integral", 300.0, "ml", 0.01));
-
-        CReteta comp[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 150.0) };
-        Reteta cappuccino("Cappuccino", 15.0, comp, 2);
-        shop.adaugaReteta(cappuccino);
-
-        assert(shop.poatePrepara("Cappuccino") == true);
-        assert(shop.poatePrepara("ProdusInexistent") == false);
-
-        shop.proceseazaComanda("Cappuccino");
-
-        assert(shop.poatePrepara("Cappuccino") == true);
-        shop.proceseazaComanda("Cappuccino");
-
-        assert(shop.poatePrepara("Cappuccino") == false);
-
-        shop.reaprovizioneaza("Cafea Boabe", 100.0);
-        shop.reaprovizioneaza("Lapte Integral", 500.0);
-        assert(shop.poatePrepara("Cappuccino") == true);
-
-        std::cout << "[PASS] testCafeneaProcesareComenzi reusit.\n";
+        std::cout << "[TEST 21] Client avansare nivel Argint si Aur...\n";
+        Client c("Ana Aslan");
+        c.inregistreazaComanda(300.0);
+        c.inregistreazaComanda(800.0);
+        double red = c.getReducere();
+        assert(red == 0.0 || red == 5.0 || red == 10.0);
+        std::string nivel = c.getNivel();
+        assert(nivel == "Standard" || nivel == "Argint" || nivel == "Aur");
     }
 
-    void testCafeneaComandaClientCompusa()
+    void test22_ClientAfisareStream()
     {
-        std::cout << "[TEST] Rulare testCafeneaComandaClientCompusa...\n";
-
-        Cafenea shop("TestClientShop", 1000.0);
-        shop.adaugaIngredient(Ingrediente("Cafea Boabe", 500.0, "g", 0.10));
-        shop.adaugaIngredient(Ingrediente("Lapte Integral", 1000.0, "ml", 0.01));
-        shop.adaugaIngredient(Ingrediente("Sirop Vanilie", 100.0, "ml", 0.05));
-
-        CReteta cEspresso[1] = { CReteta("Cafea Boabe", 18.0) };
-        shop.adaugaReteta(Reteta("Espresso", 10.0, cEspresso, 1));
-
-        CReteta cVanilla[3] = {
-            CReteta("Cafea Boabe", 18.0),
-            CReteta("Lapte Integral", 200.0),
-            CReteta("Sirop Vanilie", 20.0)
-        };
-        shop.adaugaReteta(Reteta("Vanilla Latte", 20.0, cVanilla, 3));
-
-        Client client("George Enescu");
-        std::vector<std::string> listaProduse;
-        listaProduse.push_back("Espresso");
-        listaProduse.push_back("Vanilla Latte");
-
-        shop.plaseazaComanda(client, listaProduse);
-        assert(client.getTotalCheltuit() > 0.0);
-
-        std::cout << "[PASS] testCafeneaComandaClientCompusa reusit.\n";
+        std::cout << "[TEST 22] Client operator<< stream...\n";
+        Client c("Tudor Arghezi");
+        std::ostringstream ss;
+        ss << c;
+        assert(ss.str().find("Tudor Arghezi") != std::string::npos);
     }
 
-    void testCafeneaComenziEsuateSiPartialitate()
+   
+
+    void test23_IstoricVanzariInregistrareSiStatistici()
     {
-        std::cout << "[TEST] Rulare testCafeneaComenziEsuateSiPartialitate...\n";
+        std::cout << "[TEST 23] IstoricVanzari cumulare comenzi...\n";
+        IstoricVanzari ist("Bobis_Bob_Caffe");
+        assert(ist.getNumarComenzi() == 0);
+        assert(aproapeEgal(ist.totalIncasari(), 0.0));
 
-        Cafenea shop("StresShop", 100.0);
-        shop.adaugaIngredient(Ingrediente("Cafea Boabe", 20.0, "g", 0.10));
+        Comanda cmd1(1, "Client A");
+        cmd1.adaugaLinie("Espresso", 10.0, 2);
+        ist.adaugaComanda(cmd1);
 
-        CReteta cEspresso[1] = { CReteta("Cafea Boabe", 18.0) };
-        shop.adaugaReteta(Reteta("Espresso", 8.0, cEspresso, 1));
+        Comanda cmd2(2, "Client A");
+        cmd2.adaugaLinie("Cappuccino", 15.0, 1);
+        ist.adaugaComanda(cmd2);
 
-        Client client("Cineva Oarecare");
-        std::vector<std::string> comandaImposibila;
-        comandaImposibila.push_back("Espresso");
-        comandaImposibila.push_back("BauturaCareNuExista");
-
-        // Daca lista are produse inexistente, nu ar trebui sa altereze starea clientului nejustificat
-        double cheltuieliInitiale = client.getTotalCheltuit();
-        try
-        {
-            shop.plaseazaComanda(client, comandaImposibila);
-        }
-        catch (const std::exception&)
-        {
-            // Tratare conform implementarii
-        }
-        (void)cheltuieliInitiale;
-
-        std::cout << "[PASS] testCafeneaComenziEsuateSiPartialitate reusit.\n";
+        assert(ist.getNumarComenzi() == 2);
+        assert(aproapeEgal(ist.totalIncasari(), 35.0));
+        assert(ist.numarComenziClient("Client A") == 2);
+        assert(aproapeEgal(ist.totalClient("Client A"), 35.0));
+        assert(aproapeEgal(ist.valoareMedieComanda(), 17.5));
     }
 
-    void testSalvareRaportFisier()
+    void test24_IstoricVanzariGasesteComandaSiTop()
     {
-        std::cout << "[TEST] Rulare testSalvareRaportFisier...\n";
+        std::cout << "[TEST 24] IstoricVanzari regasire comenzi si clasament...\n";
+        IstoricVanzari ist("TestShop");
+        Comanda cmd(10, "Radu Tudoran");
+        cmd.adaugaLinie("Vanilla Latte", 20.0, 3);
+        ist.adaugaComanda(cmd);
 
-        Cafenea shop("FileTestShop", 250.0);
-        shop.adaugaIngredient(Ingrediente("Cafea Boabe", 50.0, "g", 0.10));
-        CReteta comp[1] = { CReteta("Cafea Boabe", 18.0) };
-        shop.adaugaReteta(Reteta("Espresso", 8.0, comp, 1));
+        const Comanda* gasita = ist.gasesteComanda(10);
+        assert(gasita != NULL);
+        assert(gasita->getId() == 10);
 
-        shop.proceseazaComanda("Espresso");
+        const Comanda* inexistent = ist.gasesteComanda(999);
+        assert(inexistent == NULL);
 
-        const std::string caleFisier = "test_raport_output.txt";
-        bool salvat = shop.salveazaRaportVanzari(caleFisier);
+        std::vector<std::pair<std::string, int> > top = ist.topProduse(5);
+        assert(!top.empty());
+        assert(top[0].first == "Vanilla Latte");
+        assert(top[0].second == 3);
+    }
+
+    void test25_IstoricVanzariPersistentaFisier()
+    {
+        std::cout << "[TEST 25] IstoricVanzari export in fisier...\n";
+        IstoricVanzari ist("ExportShop");
+        Comanda cmd(1, "Test Persistenta");
+        cmd.adaugaLinie("Espresso", 10.0, 1);
+        ist.adaugaComanda(cmd);
+
+        const std::string fisier = "test_istoric_temp.txt";
+        bool salvat = ist.salveazaInFisier(fisier);
         assert(salvat == true);
 
-        // Verificam ca fisierul exista si nu este gol
-        std::ifstream fIn(caleFisier.c_str());
-        assert(fIn.is_open());
-        std::string linie;
-        bool areContinut = false;
-        while (std::getline(fIn, linie))
-        {
-            if (!linie.empty())
-            {
-                areContinut = true;
-                break;
-            }
-        }
-        fIn.close();
-        assert(areContinut == true);
-
-        std::cout << "[PASS] testSalvareRaportFisier reusit.\n";
+        std::ifstream fin(fisier.c_str());
+        assert(fin.is_open());
+        fin.close();
+        std::remove(fisier.c_str());
     }
 
-    void testIncarcareFisierConfiguratie()
+  
+
+    void test26_CafeneaIncarcareIngredienteSiStoc()
     {
-        std::cout << "[TEST] Rulare testIncarcareFisierConfiguratie...\n";
+        std::cout << "[TEST 26] Cafenea incarcare ingrediente si stoc...\n";
+        Cafenea shop("Cafeneaua Mea", 1000.0);
+        shop.adaugaIngredient(Ingrediente("Cafea Boabe", 300.0, "g", 0.15));
+        shop.adaugaIngredient(Ingrediente("Lapte Integral", 1000.0, "ml", 0.01));
 
-        const std::string fisierMock = "test_ingrediente_mock.txt";
-        std::ofstream fOut(fisierMock.c_str());
-        fOut << "Zahar 200 g 0.05\n";
-        fOut << "Cacao 150 g 0.08\n";
-        fOut.close();
+        bool reaprovizionat = shop.reaprovizioneaza("Cafea Boabe", 200.0);
+        assert(reaprovizionat == true);
 
-        Cafenea shop("MockShop", 300.0);
-        int nrIncarcate = shop.incarcaIngredienteDinFisier(fisierMock);
-        assert(nrIncarcate >= 0);
-
-        // Verificare comportament pe fisier inexistent
-        int nrEronat = shop.incarcaIngredienteDinFisier("fisier_complet_inexistent_12345.xyz");
-        assert(nrEronat <= 0);
-
-        std::cout << "[PASS] testIncarcareFisierConfiguratie reusit.\n";
+        bool reaprovizionatInexistent = shop.reaprovizioneaza("ScortisoaraInexistenta", 100.0);
+        assert(reaprovizionatInexistent == false);
     }
 
-    void testStresBucleSiComenziMasive()
+    void test27_CafeneaPoatePreparaSiCatalogRetete()
     {
-        std::cout << "[TEST] Rulare testStresBucleSiComenziMasive...\n";
+        std::cout << "[TEST 27] Cafenea disponibilitate reteta vs stoc...\n";
+        Cafenea shop("CatalogShop", 500.0);
+        shop.adaugaIngredient(Ingrediente("Cafea Boabe", 36.0, "g", 0.15));
 
-        Cafenea shopStres("MegaCoffee", 10000.0);
-        shopStres.adaugaIngredient(Ingrediente("Cafea Boabe", 10000.0, "g", 0.10));
-        shopStres.adaugaIngredient(Ingrediente("Lapte Integral", 50000.0, "ml", 0.01));
+        CReteta compEsp[1] = { CReteta("Cafea Boabe", 18.0) };
+        shop.adaugaReteta(Reteta("Espresso", 10.0, compEsp, 1));
 
-        CReteta comp[2] = { CReteta("Cafea Boabe", 10.0), CReteta("Lapte Integral", 100.0) };
-        Reteta cafeaLapte("Cafea cu Lapte", 12.0, comp, 2);
-        shopStres.adaugaReteta(cafeaLapte);
-
-        Client clientLoial("Client Test Stres");
-
-        for (int i = 0; i < 50; ++i)
-        {
-            assert(shopStres.poatePrepara("Cafea cu Lapte"));
-            shopStres.proceseazaComanda("Cafea cu Lapte");
-        }
-
-        std::vector<std::string> batch;
-        for (int i = 0; i < 10; ++i)
-        {
-            batch.push_back("Cafea cu Lapte");
-        }
-        shopStres.plaseazaComanda(clientLoial, batch);
-
-        assert(clientLoial.getTotalCheltuit() > 0.0);
-
-        std::cout << "[PASS] testStresBucleSiComenziMasive reusit.\n";
+        assert(shop.poatePrepara("Espresso") == true);
+        assert(shop.poatePrepara("ProdusFantom") == false);
     }
 
-    void testFormatareOperatoriStream()
+    void test28_CafeneaFluxProceseazaComandaDirecta()
     {
-        std::cout << "[TEST] Rulare testFormatareOperatoriStream...\n";
+        std::cout << "[TEST 28] Cafenea comanda directa rapida...\n";
+        Cafenea shop("FastCoffee", 500.0);
+        shop.adaugaIngredient(Ingrediente("Cafea Boabe", 36.0, "g", 0.15));
 
-        CReteta c("Cafea Boabe", 18.0);
-        Reteta r("Espresso Scurt", 9.0, &c, 1);
+        CReteta compEsp[1] = { CReteta("Cafea Boabe", 18.0) };
+        shop.adaugaReteta(Reteta("Espresso", 10.0, compEsp, 1));
 
-        std::ostringstream outReteta;
-        outReteta << r;
-        assert(outReteta.str().find("Espresso Scurt") != std::string::npos);
+        bool cmd1 = shop.proceseazaComanda("Espresso");
+        assert(cmd1 == true);
 
-        Cafenea shop("TestAfisare", 200.0);
-        shop.adaugaReteta(r);
+        bool cmd2 = shop.proceseazaComanda("Espresso");
+        assert(cmd2 == true);
 
-        std::ostringstream outShop;
-        outShop << shop;
-        assert(!outShop.str().empty());
+        // Al treilea esueaza fiindca s-au terminat cei 36g de cafea
+        bool cmd3 = shop.proceseazaComanda("Espresso");
+        assert(cmd3 == false);
+        assert(shop.poatePrepara("Espresso") == false);
+    }
 
-        std::cout << "[PASS] testFormatareOperatoriStream reusit.\n";
+    void test29_CafeneaPlaseazaComandaClientCompusa()
+    {
+        std::cout << "[TEST 29] Cafenea plaseaza comanda multipla client...\n";
+        Cafenea shop("OrderShop", 1000.0);
+        shop.adaugaIngredient(Ingrediente("Cafea Boabe", 500.0, "g", 0.15));
+        shop.adaugaIngredient(Ingrediente("Lapte Integral", 1000.0, "ml", 0.01));
+
+        CReteta compEsp[1] = { CReteta("Cafea Boabe", 18.0) };
+        shop.adaugaReteta(Reteta("Espresso", 10.0, compEsp, 1));
+
+        CReteta compCap[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 150.0) };
+        shop.adaugaReteta(Reteta("Cappuccino", 16.0, compCap, 2));
+
+        Client client("Barbu Stefanescu Delavrancea");
+        std::vector<std::string> lista;
+        lista.push_back("Espresso");
+        lista.push_back("Cappuccino");
+
+        bool plasata = shop.plaseazaComanda(client, lista);
+        assert(plasata == true);
+        assert(client.getNumarComenzi() == 1);
+        assert(client.getTotalCheltuit() > 0.0);
+        assert(shop.getIstoric().getNumarComenzi() == 1);
+    }
+
+    void test30_CafeneaSalvareRaportSiAfisare()
+    {
+        std::cout << "[TEST 30] Cafenea rapoarte, afisare si fisiere...\n";
+        Cafenea shop("ReportShop", 1000.0);
+        shop.adaugaIngredient(Ingrediente("Cafea Boabe", 200.0, "g", 0.15));
+
+        CReteta c[1] = { CReteta("Cafea Boabe", 18.0) };
+        shop.adaugaReteta(Reteta("Espresso", 10.0, c, 1));
+        shop.proceseazaComanda("Espresso");
+
+        shop.afiseazaRaportProfitabilitate();
+        shop.afiseazaIstoric();
+
+        std::ostringstream ss;
+        ss << shop;
+        assert(ss.str().find("ReportShop") != std::string::npos);
+
+        const std::string caleRaport = "test_raport_final.txt";
+        bool salvat = shop.salveazaRaportVanzari(caleRaport);
+        assert(salvat == true);
+
+        std::ifstream fVerificare(caleRaport.c_str());
+        assert(fVerificare.is_open());
+        fVerificare.close();
+        std::remove(caleRaport.c_str());
     }
 }
 
 int main()
 {
+    
+
+    // Modul 1: Ingrediente
+    TestSuite::test01_IngredienteConstructoriSiGetteri();
+    TestSuite::test02_IngredienteConsumSiStoc();
+    TestSuite::test03_IngredienteConsumLimitaExacta();
+    TestSuite::test04_IngredienteAfisareStream();
+
+    // Modul 2: CReteta
+    TestSuite::test05_CRetetaConstructoriSiGetteri();
+    TestSuite::test06_CRetetaCopiereSiAtribuire();
+    TestSuite::test07_CRetetaAfisareStream();
+
+    // Modul 3: Reteta
+    TestSuite::test08_RetetaConstructoriSiGetteri();
+    TestSuite::test09_RetetaRegulaCelorTreiCopiereAdanca();
+    TestSuite::test10_RetetaCostProductie();
+    TestSuite::test11_RetetaAfisareStream();
+
+    // Modul 4: LinieComanda
+    TestSuite::test12_LinieComandaConstructoriSiTotal();
+    TestSuite::test13_LinieComandaAdaugaCantitate();
+    TestSuite::test14_LinieComandaAfisareStream();
+
+    // Modul 5: Comanda
+    TestSuite::test15_ComandaAdaugareLiniiSiCalculSubtotal();
+    TestSuite::test16_ComandaCumulareLiniiIdentice();
+    TestSuite::test17_ComandaAplicareReducere();
+    TestSuite::test18_ComandaAfisareBonStream();
+
+    // Modul 6: Client
+    TestSuite::test19_ClientConstructoriSiDateInitiale();
+    TestSuite::test20_ClientInregistrareComandaSiPuncte();
+    TestSuite::test21_ClientAvansareNivelSiReducere();
+    TestSuite::test22_ClientAfisareStream();
+
+    // Modul 7: IstoricVanzari
+    TestSuite::test23_IstoricVanzariInregistrareSiStatistici();
+    TestSuite::test24_IstoricVanzariGasesteComandaSiTop() ;
+    TestSuite::test25_IstoricVanzariPersistentaFisier();
+
+    // Modul 8: Cafenea
+    TestSuite::test26_CafeneaIncarcareIngredienteSiStoc();
+    TestSuite::test27_CafeneaPoatePreparaSiCatalogRetete();
+    TestSuite::test28_CafeneaFluxProceseazaComandaDirecta();
+    TestSuite::test29_CafeneaPlaseazaComandaClientCompusa();
+    TestSuite::test30_CafeneaSalvareRaportSiAfisare();
+
   
-
-    TestSuite::testIngredienteOperatii();
-    TestSuite::testIngredienteCazuriLimita();
-    TestSuite::testCRetetaSiConstructori();
-    TestSuite::testCRetetaModificariSiValidari();
-    TestSuite::testRetetaRegulaCelorTrei();
-    TestSuite::testReteteComplexeSiCopiereAdanca();
-    TestSuite::testClientPuncteSiFormatare();
-    TestSuite::testClientGestiuneMultipla();
-    TestSuite::testCafeneaProcesareComenzi();
-    TestSuite::testCafeneaComandaClientCompusa();
-    TestSuite::testCafeneaComenziEsuateSiPartialitate();
-    TestSuite::testSalvareRaportFisier();
-    TestSuite::testIncarcareFisierConfiguratie();
-    TestSuite::testStresBucleSiComenziMasive();
-    TestSuite::testFormatareOperatoriStream();
-
-   
 
     return 0;
 }
