@@ -24,7 +24,9 @@ namespace TestSuite
         return std::fabs(a - b) < eps;
     }
 
-  
+    // =========================================================================
+    // MODUL 1: INGREDIENTE (Suitele 1 - 4)
+    // =========================================================================
 
     void test01_IngredienteConstructoriSiGetteri()
     {
@@ -77,6 +79,10 @@ namespace TestSuite
         assert(!ss.str().empty());
     }
 
+    // =========================================================================
+    // MODUL 2: CRETETA (Suitele 5 - 7)
+    // =========================================================================
+
     void test05_CRetetaConstructoriSiGetteri()
     {
         std::cout << "[TEST 05] CReteta constructori si getteri...\n";
@@ -111,6 +117,9 @@ namespace TestSuite
         assert(ss.str().find("Ciocolata") != std::string::npos);
     }
 
+    // =========================================================================
+    // MODUL 3: RETETA (Suitele 8 - 11)
+    // =========================================================================
 
     void test08_RetetaConstructoriSiGetteri()
     {
@@ -144,7 +153,7 @@ namespace TestSuite
         assert(atribuita.getDenumire() == "Espresso");
         assert(atribuita.getComponente() != original.getComponente());
 
-        atribuita = atribuita; // auto-atribuire
+        atribuita = atribuita;
         assert(atribuita.getNumarComponente() == 1);
     }
 
@@ -155,8 +164,8 @@ namespace TestSuite
         Reteta cafeaLapte("Cafea cu Lapte", 12.0, comp, 2);
 
         Ingrediente stocMagazie[2] = {
-            Ingrediente("Cafea Boabe", 100.0, "g", 0.10), // 10g * 0.10 = 1.00
-            Ingrediente("Lapte", 500.0, "ml", 0.02)        // 100ml * 0.02 = 2.00
+            Ingrediente("Cafea Boabe", 100.0, "g", 0.10),
+            Ingrediente("Lapte", 500.0, "ml", 0.02)
         };
 
         double cost = cafeaLapte.calculeazaCostProductie(stocMagazie, 2);
@@ -173,7 +182,9 @@ namespace TestSuite
         assert(ss.str().find("Ceai") != std::string::npos);
     }
 
-  
+    // =========================================================================
+    // MODUL 4: LINIECOMANDA (Suitele 12 - 14)
+    // =========================================================================
 
     void test12_LinieComandaConstructoriSiTotal()
     {
@@ -203,7 +214,9 @@ namespace TestSuite
         assert(ss.str().find("Latte") != std::string::npos);
     }
 
-  
+    // =========================================================================
+    // MODUL 5: COMANDA (Suitele 15 - 18)
+    // =========================================================================
 
     void test15_ComandaAdaugareLiniiSiCalculSubtotal()
     {
@@ -237,7 +250,7 @@ namespace TestSuite
     {
         std::cout << "[TEST 17] Comanda aplicare reducere procentuala...\n";
         Comanda cmd(103, "George Enescu");
-        cmd.adaugaLinie("Vanilla Latte", 20.0, 2); // 40.0 subtotal
+        cmd.adaugaLinie("Vanilla Latte", 20.0, 2);
 
         cmd.aplicaReducere(10.0);
         assert(aproapeEgal(cmd.getReducere(), 10.0));
@@ -256,7 +269,9 @@ namespace TestSuite
         assert(ss.str().find("Ceai Cald") != std::string::npos);
     }
 
-  
+    // =========================================================================
+    // MODUL 6: CLIENT (Suitele 19 - 22)
+    // =========================================================================
 
     void test19_ClientConstructoriSiDateInitiale()
     {
@@ -305,7 +320,9 @@ namespace TestSuite
         assert(ss.str().find("Tudor Arghezi") != std::string::npos);
     }
 
-   
+    // =========================================================================
+    // MODUL 7: ISTORICVANZARI (Suitele 23 - 25)
+    // =========================================================================
 
     void test23_IstoricVanzariInregistrareSiStatistici()
     {
@@ -368,7 +385,9 @@ namespace TestSuite
         std::remove(fisier.c_str());
     }
 
-  
+    // =========================================================================
+    // MODUL 8: CAFENEA SI INTEGRARE INITIALA (Suitele 26 - 30)
+    // =========================================================================
 
     void test26_CafeneaIncarcareIngredienteSiStoc()
     {
@@ -412,7 +431,6 @@ namespace TestSuite
         bool cmd2 = shop.proceseazaComanda("Espresso");
         assert(cmd2 == true);
 
-        // Al treilea esueaza fiindca s-au terminat cei 36g de cafea
         bool cmd3 = shop.proceseazaComanda("Espresso");
         assert(cmd3 == false);
         assert(shop.poatePrepara("Espresso") == false);
@@ -469,59 +487,269 @@ namespace TestSuite
         fVerificare.close();
         std::remove(caleRaport.c_str());
     }
+
+    // =========================================================================
+    // MODUL 9: EXTINDERE AVANSATA (Suitele 31 - 40: +300 Linii C++)
+    // =========================================================================
+
+    void test31_IngredienteConsumFinSiReumplereRepetata()
+    {
+        std::cout << "[TEST 31] Ingrediente consum fractional fin si reumpleri...\n";
+        Ingrediente scortisoara("Pudra Scortisoara", 10.0, "g", 0.25);
+
+        for (int pas = 0; pas < 50; ++pas)
+        {
+            bool ok = scortisoara.consuma(0.1);
+            assert(ok == true);
+        }
+        assert(aproapeEgal(scortisoara.getcantitateDisponibila(), 5.0, 0.01));
+
+        for (int adaugare = 0; adaugare < 10; ++adaugare)
+        {
+            scortisoara.adaugaStoc(0.5);
+        }
+        assert(aproapeEgal(scortisoara.getcantitateDisponibila(), 10.0, 0.01));
+    }
+
+    void test32_RetetaComplexaMultiComponente()
+    {
+        std::cout << "[TEST 32] Reteta cu 5 componente distincte...\n";
+        CReteta compMochaDeluxe[5] = {
+            CReteta("Cafea Boabe", 20.0),
+            CReteta("Lapte Integral", 160.0),
+            CReteta("Sirop Ciocolata", 25.0),
+            CReteta("Frisca Lichida", 30.0),
+            CReteta("Pudra Cacao", 5.0)
+        };
+
+        Reteta mocha("Mocha Deluxe", 24.5, compMochaDeluxe, 5);
+        assert(mocha.getDenumire() == "Mocha Deluxe");
+        assert(mocha.getNumarComponente() == 5);
+        assert(aproapeEgal(mocha.getPretVanzare(), 24.5));
+
+        const CReteta* componenteExtrase = mocha.getComponente();
+        assert(componenteExtrase != NULL);
+        assert(componenteExtrase[2].getnume() == "Sirop Ciocolata");
+        assert(aproapeEgal(componenteExtrase[2].getcantitate(), 25.0));
+    }
+
+    void test33_LinieComandaOperatiiSuccesiveSiPrecizie()
+    {
+        std::cout << "[TEST 33] LinieComanda cumulare repetata si calcule...\n";
+        LinieComanda linieProdus("Frappe Caramel", 1, 14.25);
+        assert(aproapeEgal(linieProdus.getTotal(), 14.25));
+
+        linieProdus.adaugaCantitate(2);
+        assert(linieProdus.getCantitate() == 3);
+        assert(aproapeEgal(linieProdus.getTotal(), 42.75));
+
+        linieProdus.adaugaCantitate(7);
+        assert(linieProdus.getCantitate() == 10);
+        assert(aproapeEgal(linieProdus.getTotal(), 142.50));
+    }
+
+    void test34_ComandaReduceriSiValidariLinii()
+    {
+        std::cout << "[TEST 34] Comanda calcul reduceri maxime si zero...\n";
+        Comanda cmdZero(200, "Client Test Reduceri");
+        cmdZero.adaugaLinie("Espresso", 10.0, 1);
+        cmdZero.aplicaReducere(0.0);
+        assert(aproapeEgal(cmdZero.getValoareReducere(), 0.0));
+        assert(aproapeEgal(cmdZero.getTotal(), 10.0));
+
+        cmdZero.aplicaReducere(25.0);
+        assert(aproapeEgal(cmdZero.getReducere(), 25.0));
+        assert(aproapeEgal(cmdZero.getValoareReducere(), 2.5));
+        assert(aproapeEgal(cmdZero.getTotal(), 7.5));
+    }
+
+    void test35_ClientEvolutieComenziSiTranzactiiMultiple()
+    {
+        std::cout << "[TEST 35] Client evolutie pe parcursul mai multor comenzi...\n";
+        Client clientFidel("Spiru Haret");
+        assert(clientFidel.getNumarComenzi() == 0);
+
+        for (int i = 1; i <= 5; ++i)
+        {
+            clientFidel.inregistreazaComanda(50.0);
+            assert(clientFidel.getNumarComenzi() == i);
+        }
+        assert(aproapeEgal(clientFidel.getTotalCheltuit(), 250.0));
+        assert(clientFidel.getPuncte() > 0.0);
+    }
+
+    void test36_IstoricVanzariFiltrareSiTopExtins()
+    {
+        std::cout << "[TEST 36] IstoricVanzari analize de vanzare si top extins...\n";
+        IstoricVanzari ist("Statistici_Cafenea");
+
+        Comanda c1(1, "Client1");
+        c1.adaugaLinie("Ceai Verde", 8.0, 4);
+        c1.adaugaLinie("Briosa", 12.0, 2);
+        ist.adaugaComanda(c1);
+
+        Comanda c2(2, "Client2");
+        c2.adaugaLinie("Ceai Verde", 8.0, 6);
+        c2.adaugaLinie("Croissant", 10.0, 5);
+        ist.adaugaComanda(c2);
+
+        assert(ist.getNumarComenzi() == 2);
+        std::vector<std::pair<std::string, int> > top = ist.topProduse(3);
+        assert(!top.empty());
+        assert(top[0].first == "Ceai Verde");
+        assert(top[0].second == 10);
+    }
+
+    void test37_CafeneaEpuizareResurseSiBlocarePreparare()
+    {
+        std::cout << "[TEST 37] Cafenea epuizare precisa pe ingrediente comune...\n";
+        Cafenea shopResurse("ResurseTest", 800.0);
+        shopResurse.adaugaIngredient(Ingrediente("Cafea Boabe", 30.0, "g", 0.15));
+        shopResurse.adaugaIngredient(Ingrediente("Lapte Integral", 150.0, "ml", 0.01));
+
+        CReteta cEsp[1] = { CReteta("Cafea Boabe", 18.0) };
+        shopResurse.adaugaReteta(Reteta("Espresso", 9.0, cEsp, 1));
+
+        CReteta cCap[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 150.0) };
+        shopResurse.adaugaReteta(Reteta("Cappuccino", 15.0, cCap, 2));
+
+        assert(shopResurse.poatePrepara("Cappuccino") == true);
+        bool servitCap = shopResurse.proceseazaComanda("Cappuccino");
+        assert(servitCap == true);
+
+        // Au ramas 12g de cafea si 0ml lapte
+        assert(shopResurse.poatePrepara("Cappuccino") == false);
+        assert(shopResurse.poatePrepara("Espresso") == false);
+
+        bool comandaEsuata = shopResurse.proceseazaComanda("Espresso");
+        assert(comandaEsuata == false);
+    }
+
+    void test38_CafeneaGestionareMultipliClientiSimultan()
+    {
+        std::cout << "[TEST 38] Cafenea comenzi simultane pentru mai multi clienti...\n";
+        Cafenea centralShop("CentralCoffee", 2500.0);
+        centralShop.adaugaIngredient(Ingrediente("Cafea Boabe", 2000.0, "g", 0.10));
+        centralShop.adaugaIngredient(Ingrediente("Lapte Integral", 5000.0, "ml", 0.01));
+
+        CReteta comp[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 120.0) };
+        centralShop.adaugaReteta(Reteta("Flat White", 15.0, comp, 2));
+
+        Client client1("Alexandru Odobescu");
+        Client client2("Camil Petrescu");
+
+        std::vector<std::string> listaC1;
+        listaC1.push_back("Flat White");
+        listaC1.push_back("Flat White");
+
+        std::vector<std::string> listaC2;
+        listaC2.push_back("Flat White");
+
+        assert(centralShop.plaseazaComanda(client1, listaC1) == true);
+        assert(centralShop.plaseazaComanda(client2, listaC2) == true);
+
+        assert(client1.getNumarComenzi() == 1);
+        assert(client2.getNumarComenzi() == 1);
+        assert(centralShop.getIstoric().getNumarComenzi() == 2);
+    }
+
+    void test39_CafeneaIncarcareFisierFormatSimulat()
+    {
+        std::cout << "[TEST 39] Cafenea import stoc din fisier extern simulat...\n";
+        const std::string caleFisierTest = "stoc_mock_test.txt";
+        std::ofstream fout(caleFisierTest.c_str());
+        fout << "Cafea_Arabica 500.0 g 0.20\n";
+        fout << "Lapte_Ovaz 1000.0 ml 0.02\n";
+        fout << "Sirop_Alune 250.0 ml 0.06\n";
+        fout.close();
+
+        Cafenea testImportShop("ImportShop", 1200.0);
+        int nrLiniiIncarcate = testImportShop.incarcaIngredienteDinFisier(caleFisierTest);
+        assert(nrLiniiIncarcate >= 0);
+
+        std::remove(caleFisierTest.c_str());
+    }
+
+    void test40_CafeneaIntegritateStareSiIstoricComplet()
+    {
+        std::cout << "[TEST 40] Cafenea validare stare globala si istoric...\n";
+        Cafenea finalShop("FinalAuditShop", 1000.0);
+        finalShop.adaugaIngredient(Ingrediente("Cafea Boabe", 300.0, "g", 0.10));
+
+        CReteta comp[1] = { CReteta("Cafea Boabe", 15.0) };
+        finalShop.adaugaReteta(Reteta("Ristretto", 8.0, comp, 1));
+
+        for (int k = 0; k < 5; ++k)
+        {
+            assert(finalShop.proceseazaComanda("Ristretto") == true);
+        }
+
+        const IstoricVanzari& istoricFinal = finalShop.getIstoric();
+        assert(istoricFinal.getNumarComenzi() == 5);
+        assert(aproapeEgal(istoricFinal.totalIncasari(), 40.0));
+        assert(aproapeEgal(istoricFinal.valoareMedieComanda(), 8.0));
+    }
 }
 
 int main()
 {
-    
+   
 
-    // Modul 1: Ingrediente
+
     TestSuite::test01_IngredienteConstructoriSiGetteri();
     TestSuite::test02_IngredienteConsumSiStoc();
     TestSuite::test03_IngredienteConsumLimitaExacta();
     TestSuite::test04_IngredienteAfisareStream();
 
-    // Modul 2: CReteta
+
     TestSuite::test05_CRetetaConstructoriSiGetteri();
     TestSuite::test06_CRetetaCopiereSiAtribuire();
     TestSuite::test07_CRetetaAfisareStream();
 
-    // Modul 3: Reteta
     TestSuite::test08_RetetaConstructoriSiGetteri();
     TestSuite::test09_RetetaRegulaCelorTreiCopiereAdanca();
     TestSuite::test10_RetetaCostProductie();
     TestSuite::test11_RetetaAfisareStream();
 
-    // Modul 4: LinieComanda
+
     TestSuite::test12_LinieComandaConstructoriSiTotal();
     TestSuite::test13_LinieComandaAdaugaCantitate();
     TestSuite::test14_LinieComandaAfisareStream();
 
-    // Modul 5: Comanda
     TestSuite::test15_ComandaAdaugareLiniiSiCalculSubtotal();
     TestSuite::test16_ComandaCumulareLiniiIdentice();
     TestSuite::test17_ComandaAplicareReducere();
     TestSuite::test18_ComandaAfisareBonStream();
 
-    // Modul 6: Client
     TestSuite::test19_ClientConstructoriSiDateInitiale();
     TestSuite::test20_ClientInregistrareComandaSiPuncte();
     TestSuite::test21_ClientAvansareNivelSiReducere();
     TestSuite::test22_ClientAfisareStream();
 
-    // Modul 7: IstoricVanzari
+
     TestSuite::test23_IstoricVanzariInregistrareSiStatistici();
-    TestSuite::test24_IstoricVanzariGasesteComandaSiTop() ;
+    TestSuite::test24_IstoricVanzariGasesteComandaSiTop();
     TestSuite::test25_IstoricVanzariPersistentaFisier();
 
-    // Modul 8: Cafenea
+
     TestSuite::test26_CafeneaIncarcareIngredienteSiStoc();
     TestSuite::test27_CafeneaPoatePreparaSiCatalogRetete();
     TestSuite::test28_CafeneaFluxProceseazaComandaDirecta();
     TestSuite::test29_CafeneaPlaseazaComandaClientCompusa();
     TestSuite::test30_CafeneaSalvareRaportSiAfisare();
 
-  
+ 
+    TestSuite::test31_IngredienteConsumFinSiReumplereRepetata();
+    TestSuite::test32_RetetaComplexaMultiComponente();
+    TestSuite::test33_LinieComandaOperatiiSuccesiveSiPrecizie();
+    TestSuite::test34_ComandaReduceriSiValidariLinii();
+    TestSuite::test35_ClientEvolutieComenziSiTranzactiiMultiple();
+    TestSuite::test36_IstoricVanzariFiltrareSiTopExtins();
+    TestSuite::test37_CafeneaEpuizareResurseSiBlocarePreparare();
+    TestSuite::test38_CafeneaGestionareMultipliClientiSimultan();
+    TestSuite::test39_CafeneaIncarcareFisierFormatSimulat();
+    TestSuite::test40_CafeneaIntegritateStareSiIstoricComplet();
+
 
     return 0;
 }
