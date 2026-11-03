@@ -24,9 +24,7 @@ namespace TestSuite
         return std::fabs(a - b) < eps;
     }
 
-    // =========================================================================
-    // MODUL 1: INGREDIENTE (Suitele 1 - 4)
-    // =========================================================================
+    
 
     void test01_IngredienteConstructoriSiGetteri()
     {
@@ -76,10 +74,7 @@ namespace TestSuite
         assert(!ss.str().empty());
     }
 
-    // =========================================================================
-    // MODUL 2: CRETETA (Suitele 5 - 7)
-    // =========================================================================
-
+    
     void test05_CRetetaConstructoriSiGetteri()
     {
         std::cout << "[TEST 05] CReteta constructori si getteri...\n";
@@ -111,10 +106,7 @@ namespace TestSuite
         assert(ss.str().find("Ciocolata") != std::string::npos);
     }
 
-    // =========================================================================
-    // MODUL 3: RETETA (Suitele 8 - 11)
-    // =========================================================================
-
+    
     void test08_RetetaConstructoriSiGetteri()
     {
         std::cout << "[TEST 08] Reteta constructori si inspectare componente...\n";
@@ -147,8 +139,7 @@ namespace TestSuite
         assert(atribuita.getDenumire() == "Espresso");
         assert(aproapeEgal(atribuita.getPretVanzare(), original.getPretVanzare()));
 
-        // Evitam -Wself-assign pe Clang
-        Reteta* ptrAtribuita = &atribuita;
+        const Reteta* ptrAtribuita = &atribuita;
         atribuita = *ptrAtribuita;
         assert(atribuita.getNumarComponente() == 1);
     }
@@ -178,9 +169,7 @@ namespace TestSuite
         assert(ss.str().find("Ceai") != std::string::npos);
     }
 
-    // =========================================================================
-    // MODUL 4: LINIECOMANDA (Suitele 12 - 14)
-    // =========================================================================
+ 
 
     void test12_LinieComandaConstructoriSiTotal()
     {
@@ -265,9 +254,7 @@ namespace TestSuite
         assert(ss.str().find("Ceai Cald") != std::string::npos);
     }
 
-    // =========================================================================
-    // MODUL 6: CLIENT (Suitele 19 - 22)
-    // =========================================================================
+   
 
     void test19_ClientConstructoriSiDateInitiale()
     {
@@ -316,10 +303,7 @@ namespace TestSuite
         assert(ss.str().find("Tudor Arghezi") != std::string::npos);
     }
 
-    // =========================================================================
-    // MODUL 7: ISTORICVANZARI (Suitele 23 - 25)
-    // =========================================================================
-
+  
     void test23_IstoricVanzariInregistrareSiStatistici()
     {
         std::cout << "[TEST 23] IstoricVanzari cumulare comenzi...\n";
@@ -381,10 +365,7 @@ namespace TestSuite
         std::remove(fisier.c_str());
     }
 
-    // =========================================================================
-    // MODUL 8: CAFENEA (Suitele 26 - 30)
-    // =========================================================================
-
+   
     void test26_CafeneaIncarcareIngredienteSiStoc()
     {
         std::cout << "[TEST 26] Cafenea incarcare ingrediente si stoc...\n";
@@ -485,10 +466,7 @@ namespace TestSuite
         std::remove(caleRaport.c_str());
     }
 
-    // =========================================================================
-    // MODUL 9: EXTINDERE SUPLIMENTARA (Suitele 31 - 40)
-    // =========================================================================
-
+  
     void test31_IngredienteConsumFinSiReumplereRepetata()
     {
         std::cout << "[TEST 31] Ingrediente consum fractional fin si reumpleri...\n";
@@ -781,8 +759,7 @@ namespace TestSuite
         assert(r2.getNumarComponente() == 2);
         assert(r3.getNumarComponente() == 2);
 
-        // Evitam -Wself-assign pe Clang
-        Reteta* ptrR3 = &r3;
+        const Reteta* ptrR3 = &r3;
         r3 = *ptrR3;
         assert(r3.getDenumire() == "Americano Mare");
         assert(r3.getNumarComponente() == 2);
