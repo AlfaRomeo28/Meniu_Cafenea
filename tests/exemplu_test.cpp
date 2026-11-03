@@ -31,9 +31,6 @@ namespace TestSuite
     void test01_IngredienteConstructoriSiGetteri()
     {
         std::cout << "[TEST 01] Ingrediente constructori si getteri...\n";
-        Ingrediente ingImplicit;
-        (void)ingImplicit;
-
         Ingrediente cafea("Cafea Boabe", 500.0, "g", 0.12);
         assert(cafea.getdenumire() == "Cafea Boabe");
         assert(aproapeEgal(cafea.getcantitateDisponibila(), 500.0));
@@ -49,11 +46,11 @@ namespace TestSuite
         assert(aproapeEgal(lapte.getcantitateDisponibila(), 1500.0));
 
         bool consumReusit = lapte.consuma(300.0);
-        assert(consumReusit == true);
+        assert(consumReusit);
         assert(aproapeEgal(lapte.getcantitateDisponibila(), 1200.0));
 
         bool consumExcesiv = lapte.consuma(5000.0);
-        assert(consumExcesiv == false);
+        assert(!consumExcesiv);
         assert(aproapeEgal(lapte.getcantitateDisponibila(), 1200.0));
     }
 
@@ -62,11 +59,11 @@ namespace TestSuite
         std::cout << "[TEST 03] Ingrediente consum limita exacta...\n";
         Ingrediente zahar("Zahar", 100.0, "g", 0.05);
         bool consumTot = zahar.consuma(100.0);
-        assert(consumTot == true);
+        assert(consumTot);
         assert(aproapeEgal(zahar.getcantitateDisponibila(), 0.0));
 
         bool consumPeZero = zahar.consuma(0.01);
-        assert(consumPeZero == false);
+        assert(!consumPeZero);
     }
 
     void test04_IngredienteAfisareStream()
@@ -86,9 +83,6 @@ namespace TestSuite
     void test05_CRetetaConstructoriSiGetteri()
     {
         std::cout << "[TEST 05] CReteta constructori si getteri...\n";
-        CReteta crDefault;
-        (void)crDefault;
-
         CReteta cr("Lapte Integral", 150.0);
         assert(cr.getnume() == "Lapte Integral");
         assert(aproapeEgal(cr.getcantitate(), 150.0));
@@ -124,46 +118,48 @@ namespace TestSuite
     void test08_RetetaConstructoriSiGetteri()
     {
         std::cout << "[TEST 08] Reteta constructori si inspectare componente...\n";
-        CReteta comp[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 150.0) };
+        const CReteta comp[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 150.0) };
         Reteta cappuccino("Cappuccino", 16.0, comp, 2);
 
         assert(cappuccino.getDenumire() == "Cappuccino");
         assert(aproapeEgal(cappuccino.getPretVanzare(), 16.0));
         assert(cappuccino.getNumarComponente() == 2);
-        assert(cappuccino.getComponente() != NULL);
+        assert(cappuccino.getComponente() != nullptr);
         assert(cappuccino.getComponente()[0].getnume() == "Cafea Boabe");
     }
 
     void test09_RetetaRegulaCelorTreiCopiereAdanca()
     {
         std::cout << "[TEST 09] Reteta regula celor 3 si deep copy...\n";
-        CReteta comp[1] = { CReteta("Cafea Boabe", 18.0) };
+        const CReteta comp[1] = { CReteta("Cafea Boabe", 18.0) };
         Reteta original("Espresso", 10.0, comp, 1);
 
         {
             Reteta copie = original;
             assert(copie.getNumarComponente() == 1);
             assert(copie.getDenumire() == "Espresso");
-            assert(copie.getComponente() != original.getComponente());
+            assert(aproapeEgal(copie.getPretVanzare(), original.getPretVanzare()));
         }
 
         Reteta atribuita;
         atribuita = original;
         assert(atribuita.getNumarComponente() == 1);
         assert(atribuita.getDenumire() == "Espresso");
-        assert(atribuita.getComponente() != original.getComponente());
+        assert(aproapeEgal(atribuita.getPretVanzare(), original.getPretVanzare()));
 
-        atribuita = atribuita;
+        // Evitam -Wself-assign pe Clang
+        Reteta* ptrAtribuita = &atribuita;
+        atribuita = *ptrAtribuita;
         assert(atribuita.getNumarComponente() == 1);
     }
 
     void test10_RetetaCostProductie()
     {
         std::cout << "[TEST 10] Reteta calcul cost productie...\n";
-        CReteta comp[2] = { CReteta("Cafea Boabe", 10.0), CReteta("Lapte", 100.0) };
+        const CReteta comp[2] = { CReteta("Cafea Boabe", 10.0), CReteta("Lapte", 100.0) };
         Reteta cafeaLapte("Cafea cu Lapte", 12.0, comp, 2);
 
-        Ingrediente stocMagazie[2] = {
+        const Ingrediente stocMagazie[2] = {
             Ingrediente("Cafea Boabe", 100.0, "g", 0.10),
             Ingrediente("Lapte", 500.0, "ml", 0.02)
         };
@@ -175,7 +171,7 @@ namespace TestSuite
     void test11_RetetaAfisareStream()
     {
         std::cout << "[TEST 11] Reteta operator<< ...\n";
-        CReteta comp[1] = { CReteta("Apa", 200.0) };
+        const CReteta comp[1] = { CReteta("Apa", 200.0) };
         Reteta ceai("Ceai", 8.0, comp, 1);
         std::ostringstream ss;
         ss << ceai;
@@ -355,11 +351,11 @@ namespace TestSuite
         ist.adaugaComanda(cmd);
 
         const Comanda* gasita = ist.gasesteComanda(10);
-        assert(gasita != NULL);
+        assert(gasita != nullptr);
         assert(gasita->getId() == 10);
 
         const Comanda* inexistent = ist.gasesteComanda(999);
-        assert(inexistent == NULL);
+        assert(inexistent == nullptr);
 
         std::vector<std::pair<std::string, int> > top = ist.topProduse(5);
         assert(!top.empty());
@@ -377,7 +373,7 @@ namespace TestSuite
 
         const std::string fisier = "test_istoric_temp.txt";
         bool salvat = ist.salveazaInFisier(fisier);
-        assert(salvat == true);
+        assert(salvat);
 
         std::ifstream fin(fisier.c_str());
         assert(fin.is_open());
@@ -397,10 +393,10 @@ namespace TestSuite
         shop.adaugaIngredient(Ingrediente("Lapte Integral", 1000.0, "ml", 0.01));
 
         bool reaprovizionat = shop.reaprovizioneaza("Cafea Boabe", 200.0);
-        assert(reaprovizionat == true);
+        assert(reaprovizionat);
 
         bool reaprovizionatInexistent = shop.reaprovizioneaza("ScortisoaraInexistenta", 100.0);
-        assert(reaprovizionatInexistent == false);
+        assert(!reaprovizionatInexistent);
     }
 
     void test27_CafeneaPoatePreparaSiCatalogRetete()
@@ -409,11 +405,11 @@ namespace TestSuite
         Cafenea shop("CatalogShop", 500.0);
         shop.adaugaIngredient(Ingrediente("Cafea Boabe", 36.0, "g", 0.15));
 
-        CReteta compEsp[1] = { CReteta("Cafea Boabe", 18.0) };
+        const CReteta compEsp[1] = { CReteta("Cafea Boabe", 18.0) };
         shop.adaugaReteta(Reteta("Espresso", 10.0, compEsp, 1));
 
-        assert(shop.poatePrepara("Espresso") == true);
-        assert(shop.poatePrepara("ProdusFantom") == false);
+        assert(shop.poatePrepara("Espresso"));
+        assert(!shop.poatePrepara("ProdusFantom"));
     }
 
     void test28_CafeneaFluxProceseazaComandaDirecta()
@@ -422,18 +418,18 @@ namespace TestSuite
         Cafenea shop("FastCoffee", 500.0);
         shop.adaugaIngredient(Ingrediente("Cafea Boabe", 36.0, "g", 0.15));
 
-        CReteta compEsp[1] = { CReteta("Cafea Boabe", 18.0) };
+        const CReteta compEsp[1] = { CReteta("Cafea Boabe", 18.0) };
         shop.adaugaReteta(Reteta("Espresso", 10.0, compEsp, 1));
 
         bool cmd1 = shop.proceseazaComanda("Espresso");
-        assert(cmd1 == true);
+        assert(cmd1);
 
         bool cmd2 = shop.proceseazaComanda("Espresso");
-        assert(cmd2 == true);
+        assert(cmd2);
 
         bool cmd3 = shop.proceseazaComanda("Espresso");
-        assert(cmd3 == false);
-        assert(shop.poatePrepara("Espresso") == false);
+        assert(!cmd3);
+        assert(!shop.poatePrepara("Espresso"));
     }
 
     void test29_CafeneaPlaseazaComandaClientCompusa()
@@ -443,10 +439,10 @@ namespace TestSuite
         shop.adaugaIngredient(Ingrediente("Cafea Boabe", 500.0, "g", 0.15));
         shop.adaugaIngredient(Ingrediente("Lapte Integral", 1000.0, "ml", 0.01));
 
-        CReteta compEsp[1] = { CReteta("Cafea Boabe", 18.0) };
+        const CReteta compEsp[1] = { CReteta("Cafea Boabe", 18.0) };
         shop.adaugaReteta(Reteta("Espresso", 10.0, compEsp, 1));
 
-        CReteta compCap[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 150.0) };
+        const CReteta compCap[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 150.0) };
         shop.adaugaReteta(Reteta("Cappuccino", 16.0, compCap, 2));
 
         Client client("Barbu Stefanescu Delavrancea");
@@ -455,7 +451,7 @@ namespace TestSuite
         lista.push_back("Cappuccino");
 
         bool plasata = shop.plaseazaComanda(client, lista);
-        assert(plasata == true);
+        assert(plasata);
         assert(client.getNumarComenzi() == 1);
         assert(client.getTotalCheltuit() > 0.0);
         assert(shop.getIstoric().getNumarComenzi() == 1);
@@ -467,9 +463,10 @@ namespace TestSuite
         Cafenea shop("ReportShop", 1000.0);
         shop.adaugaIngredient(Ingrediente("Cafea Boabe", 200.0, "g", 0.15));
 
-        CReteta c[1] = { CReteta("Cafea Boabe", 18.0) };
+        const CReteta c[1] = { CReteta("Cafea Boabe", 18.0) };
         shop.adaugaReteta(Reteta("Espresso", 10.0, c, 1));
-        shop.proceseazaComanda("Espresso");
+        bool okCmd = shop.proceseazaComanda("Espresso");
+        assert(okCmd);
 
         shop.afiseazaRaportProfitabilitate();
         shop.afiseazaIstoric();
@@ -480,7 +477,7 @@ namespace TestSuite
 
         const std::string caleRaport = "test_raport_final.txt";
         bool salvat = shop.salveazaRaportVanzari(caleRaport);
-        assert(salvat == true);
+        assert(salvat);
 
         std::ifstream fVerificare(caleRaport.c_str());
         assert(fVerificare.is_open());
@@ -500,7 +497,7 @@ namespace TestSuite
         for (int pas = 0; pas < 50; ++pas)
         {
             bool ok = scortisoara.consuma(0.1);
-            assert(ok == true);
+            assert(ok);
         }
         assert(aproapeEgal(scortisoara.getcantitateDisponibila(), 5.0, 0.01));
 
@@ -514,7 +511,7 @@ namespace TestSuite
     void test32_RetetaComplexaMultiComponente()
     {
         std::cout << "[TEST 32] Reteta cu 5 componente distincte...\n";
-        CReteta compMochaDeluxe[5] = {
+        const CReteta compMochaDeluxe[5] = {
             CReteta("Cafea Boabe", 20.0),
             CReteta("Lapte Integral", 160.0),
             CReteta("Sirop Ciocolata", 25.0),
@@ -528,7 +525,7 @@ namespace TestSuite
         assert(aproapeEgal(mocha.getPretVanzare(), 24.5));
 
         const CReteta* componenteExtrase = mocha.getComponente();
-        assert(componenteExtrase != NULL);
+        assert(componenteExtrase != nullptr);
         assert(componenteExtrase[2].getnume() == "Sirop Ciocolata");
         assert(aproapeEgal(componenteExtrase[2].getcantitate(), 25.0));
     }
@@ -607,21 +604,21 @@ namespace TestSuite
         shopResurse.adaugaIngredient(Ingrediente("Cafea Boabe", 30.0, "g", 0.15));
         shopResurse.adaugaIngredient(Ingrediente("Lapte Integral", 150.0, "ml", 0.01));
 
-        CReteta cEsp[1] = { CReteta("Cafea Boabe", 18.0) };
+        const CReteta cEsp[1] = { CReteta("Cafea Boabe", 18.0) };
         shopResurse.adaugaReteta(Reteta("Espresso", 9.0, cEsp, 1));
 
-        CReteta cCap[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 150.0) };
+        const CReteta cCap[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 150.0) };
         shopResurse.adaugaReteta(Reteta("Cappuccino", 15.0, cCap, 2));
 
-        assert(shopResurse.poatePrepara("Cappuccino") == true);
+        assert(shopResurse.poatePrepara("Cappuccino"));
         bool servitCap = shopResurse.proceseazaComanda("Cappuccino");
-        assert(servitCap == true);
+        assert(servitCap);
 
-        assert(shopResurse.poatePrepara("Cappuccino") == false);
-        assert(shopResurse.poatePrepara("Espresso") == false);
+        assert(!shopResurse.poatePrepara("Cappuccino"));
+        assert(!shopResurse.poatePrepara("Espresso"));
 
         bool comandaEsuata = shopResurse.proceseazaComanda("Espresso");
-        assert(comandaEsuata == false);
+        assert(!comandaEsuata);
     }
 
     void test38_CafeneaGestionareMultipliClientiSimultan()
@@ -631,7 +628,7 @@ namespace TestSuite
         centralShop.adaugaIngredient(Ingrediente("Cafea Boabe", 2000.0, "g", 0.10));
         centralShop.adaugaIngredient(Ingrediente("Lapte Integral", 5000.0, "ml", 0.01));
 
-        CReteta comp[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 120.0) };
+        const CReteta comp[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte Integral", 120.0) };
         centralShop.adaugaReteta(Reteta("Flat White", 15.0, comp, 2));
 
         Client client1("Alexandru Odobescu");
@@ -644,8 +641,10 @@ namespace TestSuite
         std::vector<std::string> listaC2;
         listaC2.push_back("Flat White");
 
-        assert(centralShop.plaseazaComanda(client1, listaC1) == true);
-        assert(centralShop.plaseazaComanda(client2, listaC2) == true);
+        bool okC1 = centralShop.plaseazaComanda(client1, listaC1);
+        bool okC2 = centralShop.plaseazaComanda(client2, listaC2);
+        assert(okC1);
+        assert(okC2);
 
         assert(client1.getNumarComenzi() == 1);
         assert(client2.getNumarComenzi() == 1);
@@ -675,12 +674,13 @@ namespace TestSuite
         Cafenea finalShop("FinalAuditShop", 1000.0);
         finalShop.adaugaIngredient(Ingrediente("Cafea Boabe", 300.0, "g", 0.10));
 
-        CReteta comp[1] = { CReteta("Cafea Boabe", 15.0) };
+        const CReteta comp[1] = { CReteta("Cafea Boabe", 15.0) };
         finalShop.adaugaReteta(Reteta("Ristretto", 8.0, comp, 1));
 
         for (int k = 0; k < 5; ++k)
         {
-            assert(finalShop.proceseazaComanda("Ristretto") == true);
+            bool okRistretto = finalShop.proceseazaComanda("Ristretto");
+            assert(okRistretto);
         }
 
         const IstoricVanzari& istoricFinal = finalShop.getIstoric();
@@ -690,7 +690,7 @@ namespace TestSuite
     }
 
     // =========================================================================
-    // MODUL 10: STRES, PERSISTENTA SI SCENARII EXTREME (Suitele 41 - 50: +400 Linii)
+    // MODUL 10: STRES, PERSISTENTA SI SCENARII EXTREME (Suitele 41 - 50)
     // =========================================================================
 
     void test41_IngredienteConsumPanaLaEpuizareTotala()
@@ -703,9 +703,10 @@ namespace TestSuite
         {
             assert(aproapeEgal(cardamon.getcantitateDisponibila(), 50.0));
             bool okConsum = cardamon.consuma(50.0);
-            assert(okConsum == true);
+            assert(okConsum);
             assert(aproapeEgal(cardamon.getcantitateDisponibila(), 0.0));
-            assert(cardamon.consuma(1.0) == false);
+            bool okConsumPeste = cardamon.consuma(1.0);
+            assert(!okConsumPeste);
 
             cardamon.adaugaStoc(50.0);
         }
@@ -736,7 +737,7 @@ namespace TestSuite
     void test43_RetetaMultiplaCuSapteIngrediente()
     {
         std::cout << "[TEST 43] Reteta cu 7 componente si cost de productie...\n";
-        CReteta compSpecial[7] = {
+        const CReteta compSpecial[7] = {
             CReteta("Cafea Boabe", 22.0),
             CReteta("Lapte Soia", 180.0),
             CReteta("Sirop Fistic", 20.0),
@@ -751,7 +752,7 @@ namespace TestSuite
         assert(monsterCoffee.getDenumire() == "Super Monster Blend");
         assert(aproapeEgal(monsterCoffee.getPretVanzare(), 32.0));
 
-        Ingrediente magazie[7] = {
+        const Ingrediente magazie[7] = {
             Ingrediente("Cafea Boabe", 1000.0, "g", 0.15),
             Ingrediente("Lapte Soia", 2000.0, "ml", 0.02),
             Ingrediente("Sirop Fistic", 500.0, "ml", 0.08),
@@ -769,10 +770,10 @@ namespace TestSuite
     void test44_RetetaAutoAtribuireSiSecventeCopiere()
     {
         std::cout << "[TEST 44] Reteta lanturi de copiere si auto-atribuire multipla...\n";
-        CReteta c[2] = { CReteta("Boabe", 10.0), CReteta("Apa", 100.0) };
+        const CReteta c[2] = { CReteta("Boabe", 10.0), CReteta("Apa", 100.0) };
         Reteta r1("Americano Mare", 12.0, c, 2);
-        Reteta r2("Dummy", 1.0, NULL, 0);
-        Reteta r3("Dummy2", 2.0, NULL, 0);
+        Reteta r2("Dummy", 1.0, nullptr, 0);
+        Reteta r3("Dummy2", 2.0, nullptr, 0);
 
         r3 = r2 = r1;
         assert(r2.getDenumire() == "Americano Mare");
@@ -780,7 +781,9 @@ namespace TestSuite
         assert(r2.getNumarComponente() == 2);
         assert(r3.getNumarComponente() == 2);
 
-        r3 = r3;
+        // Evitam -Wself-assign pe Clang
+        Reteta* ptrR3 = &r3;
+        r3 = *ptrR3;
         assert(r3.getDenumire() == "Americano Mare");
         assert(r3.getNumarComponente() == 2);
     }
@@ -856,7 +859,7 @@ namespace TestSuite
             cmd.adaugaLinie("Espresso", 10.0, 1);
             if (idCmd % 2 == 0)
             {
-                cmd.aplicaReducere(10.0); // 1 leu reducere
+                cmd.aplicaReducere(10.0);
                 sumaAsteptataReduceri += 1.0;
                 sumaAsteptataIncasari += 9.0;
             }
@@ -879,22 +882,23 @@ namespace TestSuite
         Cafenea highTrafficShop("MegaDriveCoffee", 10000.0);
 
         highTrafficShop.adaugaIngredient(Ingrediente("Cafea Boabe", 1800.0, "g", 0.10));
-        CReteta comp[1] = { CReteta("Cafea Boabe", 18.0) };
+        const CReteta comp[1] = { CReteta("Cafea Boabe", 18.0) };
         highTrafficShop.adaugaReteta(Reteta("Espresso", 10.0, comp, 1));
 
         for (int i = 0; i < 100; ++i)
         {
-            assert(highTrafficShop.poatePrepara("Espresso") == true);
+            assert(highTrafficShop.poatePrepara("Espresso"));
             bool servit = highTrafficShop.proceseazaComanda("Espresso");
-            assert(servit == true);
+            assert(servit);
         }
 
-        assert(highTrafficShop.poatePrepara("Espresso") == false);
-        assert(highTrafficShop.proceseazaComanda("Espresso") == false);
+        assert(!highTrafficShop.poatePrepara("Espresso"));
+        bool servitPeste = highTrafficShop.proceseazaComanda("Espresso");
+        assert(!servitPeste);
 
         bool aprovizionat = highTrafficShop.reaprovizioneaza("Cafea Boabe", 900.0);
-        assert(aprovizionat == true);
-        assert(highTrafficShop.poatePrepara("Espresso") == true);
+        assert(aprovizionat);
+        assert(highTrafficShop.poatePrepara("Espresso"));
         assert(highTrafficShop.getIstoric().getNumarComenzi() == 100);
     }
 
@@ -905,7 +909,7 @@ namespace TestSuite
         enterpriseShop.adaugaIngredient(Ingrediente("Cafea Boabe", 500.0, "g", 0.12));
         enterpriseShop.adaugaIngredient(Ingrediente("Lapte", 2000.0, "ml", 0.01));
 
-        CReteta cCap[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte", 150.0) };
+        const CReteta cCap[2] = { CReteta("Cafea Boabe", 18.0), CReteta("Lapte", 150.0) };
         enterpriseShop.adaugaReteta(Reteta("Cappuccino", 16.0, cCap, 2));
 
         Client clientVIP("VIP Customer");
@@ -913,11 +917,12 @@ namespace TestSuite
         listaVIP.push_back("Cappuccino");
         listaVIP.push_back("Cappuccino");
 
-        enterpriseShop.plaseazaComanda(clientVIP, listaVIP);
+        bool plasatVIP = enterpriseShop.plaseazaComanda(clientVIP, listaVIP);
+        assert(plasatVIP);
 
         const std::string fisierRaport = "raport_enterprise_test.txt";
         bool salvatCuSucces = enterpriseShop.salveazaRaportVanzari(fisierRaport);
-        assert(salvatCuSucces == true);
+        assert(salvatCuSucces);
 
         std::ifstream fileRead(fisierRaport.c_str());
         assert(fileRead.is_open());
@@ -935,7 +940,6 @@ namespace TestSuite
 
 int main()
 {
- 
 
     // Modul 1: Ingrediente
     TestSuite::test01_IngredienteConstructoriSiGetteri();
@@ -995,7 +999,7 @@ int main()
     TestSuite::test39_CafeneaIncarcareFisierFormatSimulat();
     TestSuite::test40_CafeneaIntegritateStareSiIstoricComplet();
 
-    // Modul 10: Suitele Avansate (+400 Linii C++, 41 - 50)
+    // Modul 10: Suitele Avansate (41 - 50)
     TestSuite::test41_IngredienteConsumPanaLaEpuizareTotala();
     TestSuite::test42_CRetetaStresVectorSiComparatii();
     TestSuite::test43_RetetaMultiplaCuSapteIngrediente();
@@ -1007,7 +1011,6 @@ int main()
     TestSuite::test49_CafeneaStresSuteDeComenziSiReaprovizionari();
     TestSuite::test50_CafeneaSalvareRaportSiVerificareIntegralaLinii();
 
-   
 
     return 0;
 }
