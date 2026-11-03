@@ -51,7 +51,7 @@ namespace
         return produse;
     }
 
-    // Cauta clientul dupa nume; daca nu exista, il creeaza (poate arunca invalid_argument)
+    // cauta clientul dupa nume; daca nu exista, il creeaza (poate arunca invalid_argument)
     Client& gasesteSauCreeazaClient(std::vector<Client>& clienti, const std::string& numeClient)
     {
         for (std::size_t i = 0; i < clienti.size(); ++i)

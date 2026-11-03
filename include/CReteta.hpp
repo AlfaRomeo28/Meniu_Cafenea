@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-// O componenta a unei retete: un ingredient + cantitatea ceruta
+//  componenta a unei retete: un ingredient + cantitatea ceruta
 class CReteta
 {
 private:

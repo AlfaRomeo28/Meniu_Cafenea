@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-// O linie de pe bonul unei comenzi: produs, cantitate, pret unitar
+// linia de pe bonul unei comenzi: produs, cantitate, pret unitar
 class LinieComanda
 {
 private:

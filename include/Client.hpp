@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-// Un client fidel al cafenelei: aduna puncte, iar nivelul lui da reducere
+// client fidel al cafenelei: aduna puncte, iar nivelul lui da reducere
 class Client
 {
 private:

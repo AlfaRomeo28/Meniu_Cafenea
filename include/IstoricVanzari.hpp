@@ -8,7 +8,7 @@
 #include <vector>
 #include "Comanda.hpp"
 
-// Pastreaza toate comenzile finalizate si calculeaza statistici pe ele
+// pastreaza toate comenzile finalizate si calculeaza statistici pe ele
 class IstoricVanzari
 {
 private:

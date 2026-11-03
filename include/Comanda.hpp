@@ -6,7 +6,7 @@
 #include <vector>
 #include "LinieComanda.hpp"
 
-// O comanda finalizata: client + lista de linii + reducere aplicata
+// comanda finalizata: client + lista de linii + reducere aplicata
 class Comanda
 {
 private:

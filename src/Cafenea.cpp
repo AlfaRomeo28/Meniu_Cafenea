@@ -59,9 +59,9 @@ void Cafenea::adaugaReteta(const Reteta& ret)
     catalogR.push_back(ret);
 }
 
-// Citeste ingredientele dintr-un fisier text, o linie pe ingredient:
+
 //   denumire;stoc;unitate;pret_unitar     (liniile care incep cu # sunt comentarii)
-// Returneaza cate ingrediente a incarcat, sau -1 daca fisierul nu poate fi deschis
+// returneaza cate ingrediente a incarcat, sau -1 daca fisierul nu poate fi deschis
 int Cafenea::incarcaIngredienteDinFisier(const std::string& cale)
 {
     std::ifstream fisier(cale.c_str());
