@@ -2,9 +2,38 @@
 Y
 2
 Y
-5
+8
+Ana
+Cappuccino; Vanilla Latte; Espresso
+Y
+8
+Ana
+Espresso; Espresso
+Y
+8
+Mihai
+Mocha
+Y
+8
+
 Espresso
+Y
+8
+Mihai
+Vanilla Latte; Vanilla Latte; Vanilla Latte; Vanilla Latte; Vanilla Latte; Vanilla Latte; Vanilla Latte; Vanilla Latte; Vanilla Latte
+Y
+9
+Y
+10
+Y
+11
+raport_vanzari.txt
+Y
+7
+Cafea Boabe
+100
 Y
 6
 Y
-0
+1
+N

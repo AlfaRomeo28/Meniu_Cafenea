@@ -1,5 +1,5 @@
-#ifndef INGREDIENTE_HPP
-#define INGREDIENTE_HPP
+#ifndef INGREDIENTE_H
+#define INGREDIENTE_H
 
 #include <iostream>
 #include <string>
@@ -27,4 +27,3 @@ public:
 };
 
 #endif
-

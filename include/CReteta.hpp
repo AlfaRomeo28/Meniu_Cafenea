@@ -1,10 +1,10 @@
-#ifndef CRETETA_HPP
-#define CRETETA_HPP
+#ifndef CRETETA_H
+#define CRETETA_H
 
 #include <iostream>
 #include <string>
 
-//  ingredient + cantitatea ceruta
+// O componenta a unei retete: un ingredient + cantitatea ceruta
 class CReteta
 {
 private:
@@ -19,4 +19,5 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const CReteta& cr);
 };
+
 #endif

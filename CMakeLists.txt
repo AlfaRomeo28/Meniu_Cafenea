@@ -61,7 +61,17 @@ include(cmake/RegisterTests.cmake)
 # Configure sources
 
 # always STATIC (simpler); TBD if we ever want dynamic for this; BUILD_SHARED_LIBS is for ext deps
-add_library(${MAIN_LIBRARY_NAME} STATIC)
+add_library(${MAIN_LIBRARY_NAME} STATIC
+        include/Client.hpp
+        include/Comanda.hpp
+        include/IstoricVanzari.hpp
+        include/LinieComanda.hpp
+        include/Cafenea.hpp
+        include/CReteta.hpp
+        include/Ingrediente.hpp
+        include/Reteta.hpp
+
+)
 
 # NOTE: update EXECUTABLE_NAME in .github/workflows/cmake.yml when changing name here
 add_executable(${MAIN_EXECUTABLE_NAME}
@@ -69,10 +79,15 @@ add_executable(${MAIN_EXECUTABLE_NAME}
 )
 target_sources(${MAIN_LIBRARY_NAME}
     PRIVATE
-       src/Ingrediente.cpp
-       src/CReteta.cpp
-       src/Reteta.cpp
-       src/Cafenea.cpp
+        src/Ingrediente.cpp
+        src/CReteta.cpp
+        src/Reteta.cpp
+        src/Cafenea.cpp
+        src/Client.cpp
+        src/Comanda.cpp
+        src/IstoricVanzari.cpp
+        src/LinieComanda.cpp
+
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )

@@ -1,12 +1,13 @@
-#ifndef RETETA_HPP
-#define RETETA_HPP
+#ifndef RETETA_H
+#define RETETA_H
 
 #include <iostream>
 #include <string>
 #include "CReteta.hpp"
 #include "Ingrediente.hpp"
 
-
+// Clasa cu "regula celor 3": constructor de copiere, operator= si destructor
+// (componentele sunt tinute intr-un tablou dinamic gestionat manual)
 class Reteta
 {
 private:
@@ -34,4 +35,3 @@ public:
 };
 
 #endif
-
