@@ -2,6 +2,13 @@
 Y
 2
 Y
+12
+1
+Y
+12
+3
+Happy Hour Espresso
+Y
 8
 Ana
 Cappuccino; Vanilla Latte; Espresso
@@ -9,6 +16,26 @@ Y
 8
 Ana
 Espresso; Espresso
+Y
+12
+2
+Promo Cappuccino
+Cappuccino
+25
+Y
+12
+3
+Promo Cappuccino
+Y
+8
+Ana
+Cappuccino; Espresso
+Y
+12
+2
+Promo Mocha
+Mocha
+10
 Y
 8
 Mihai
@@ -32,6 +59,14 @@ Y
 7
 Cafea Boabe
 100
+Y
+13
+Y
+14
+raport_financiar.txt
+Y
+15
+stoc_curent.txt
 Y
 6
 Y

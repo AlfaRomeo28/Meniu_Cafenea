@@ -4,7 +4,8 @@
 #include <stdexcept>
 
 Cafenea::Cafenea(const std::string& numeCafenea, double fondInitial)
-    : nume(numeCafenea), balansf(fondInitial), istoric(numeCafenea), urmatorulIdComanda(1) {}
+    : nume(numeCafenea), balansf(fondInitial), istoric(numeCafenea), urmatorulIdComanda(1),
+      cheltuieliReaprovizionare(0.0) {}
 
 int Cafenea::gasesteIndexIngredient(const std::string& denumire) const
 {
@@ -22,8 +23,8 @@ int Cafenea::gasesteIndexReteta(const std::string& denumire) const
     return -1;
 }
 
-// Aduna necesarul total de ingrediente: daca ingredientul exista deja in lista,
-// ii creste cantitatea, altfel il adauga
+// aduna necesarul total de ingrediente: daca ingredientul exista deja in lista,
+// ii creste cantitatea sau il adauga
 void Cafenea::adaugaLaNecesar(std::vector<CReteta>& necesar, const CReteta& comp)
 {
     for (std::size_t i = 0; i < necesar.size(); ++i)
@@ -37,7 +38,7 @@ void Cafenea::adaugaLaNecesar(std::vector<CReteta>& necesar, const CReteta& comp
     necesar.push_back(comp);
 }
 
-// true daca stocul acopera TOATE ingredientele din lista
+
 bool Cafenea::stocAcopera(const std::vector<CReteta>& necesar) const
 {
     for (std::size_t i = 0; i < necesar.size(); ++i)
@@ -60,7 +61,6 @@ void Cafenea::adaugaReteta(const Reteta& ret)
 }
 
 
-//   denumire;stoc;unitate;pret_unitar     (liniile care incep cu # sunt comentarii)
 // returneaza cate ingrediente a incarcat, sau -1 daca fisierul nu poate fi deschis
 int Cafenea::incarcaIngredienteDinFisier(const std::string& cale)
 {
@@ -122,9 +122,8 @@ bool Cafenea::proceseazaComanda(const std::string& numeBautura)
     return plaseazaComanda(anonim, std::vector<std::string>(1, numeBautura));
 }
 
-// Comanda completa: mai multe produse pentru un client.
-// Pasii: 1) aduna necesarul total, 2) verifica stocul pentru TOT,
-// 3) scade ingredientele, 4) aplica reducerea de fidelitate, 5) incaseaza si inregistreaza
+//Comanda client completa
+//  1) aduna necesarul total, 2) verifica stocul pentru tot, 3) scade ingredientele, 4) aplica reducerea de fidelitate, 5) incaseaza si inregistreaza
 bool Cafenea::plaseazaComanda(Client& client, const std::vector<std::string>& produse)
 {
     if (produse.empty())
@@ -158,7 +157,18 @@ bool Cafenea::plaseazaComanda(Client& client, const std::vector<std::string>& pr
 
     Comanda cmd(urmatorulIdComanda, client.getNume());
     for (std::size_t i = 0; i < produse.size(); ++i)
-        cmd.adaugaLinie(produse[i], catalogR[gasesteIndexReteta(produse[i])].getPretVanzare());
+    {
+        double pret = catalogR[gasesteIndexReteta(produse[i])].getPretVanzare();
+        int ip = gasesteIndexPromotie(produse[i]);
+        if (ip != -1)
+        {
+            double pretRedus = promotii[ip].calculeazaPretRedus(pret);
+            std::cout << "[PROMO] " << promotii[ip].getNume() << ": " << produse[i] << " "
+                      << pret << " -> " << pretRedus << " Lei leuti\n";
+            pret = pretRedus;
+        }
+        cmd.adaugaLinie(produse[i], pret);
+    }
 
     cmd.aplicaReducere(client.getReducere());   // reducerea nivelului de la inceputul comenzii
     balansf += cmd.getTotal();
@@ -188,6 +198,7 @@ bool Cafenea::reaprovizioneaza(const std::string& denumireIngredient, double can
     }
 
     balansf -= cost;
+    cheltuieliReaprovizionare += cost;
     stocIngrediente[idx].adaugaStoc(cantitate);
     std::cout << "[REAPROVIZIONARE] +" << cantitate << " "
               << stocIngrediente[idx].getunitateMasura() << " "
@@ -243,4 +254,104 @@ std::ostream& operator<<(std::ostream& os, const Cafenea& c)
         os << "  - " << c.catalogR[i] << "\n";
     os << "-----------------------------------";
     return os;
+}
+
+// Intoarce promotia activa cu cea mai mare reducere pentru produs, sau -1
+int Cafenea::gasesteIndexPromotie(const std::string& produs) const
+{
+    int best = -1;
+    for (std::size_t i = 0; i < promotii.size(); ++i)
+    {
+        if (promotii[i].aplicabila(produs) &&
+            (best == -1 || promotii[i].getProcent() > promotii[best].getProcent()))
+            best = static_cast<int>(i);
+    }
+    return best;
+}
+
+int Cafenea::gasesteIndexPromotieNume(const std::string& numePromotie) const
+{
+    for (std::size_t i = 0; i < promotii.size(); ++i)
+        if (promotii[i].getNume() == numePromotie)
+            return static_cast<int>(i);
+    return -1;
+}
+
+void Cafenea::adaugaPromotie(const Promotie& promo)
+{
+    if (gasesteIndexReteta(promo.getProdusVizat()) == -1)
+        throw std::invalid_argument("Promotia vizeaza un produs inexistent: " + promo.getProdusVizat());
+    if (gasesteIndexPromotieNume(promo.getNume()) != -1)
+        throw std::invalid_argument("Exista deja o promotie cu numele: " + promo.getNume());
+    promotii.push_back(promo);
+}
+
+bool Cafenea::seteazaStarePromotie(const std::string& numePromotie, bool activa)
+{
+    int idx = gasesteIndexPromotieNume(numePromotie);
+    if (idx == -1)
+        return false;
+    if (activa)
+        promotii[idx].activeaza();
+    else
+        promotii[idx].dezactiveaza();
+    return true;
+}
+
+void Cafenea::afiseazaPromotii() const
+{
+    std::cout << "\n---------- PROMOTII ----------\n";
+    if (promotii.empty())
+        std::cout << "Nu exista promotii definite.\n";
+    for (std::size_t i = 0; i < promotii.size(); ++i)
+        std::cout << " * " << promotii[i] << "\n";
+    std::cout << "------------------------------\n";
+}
+
+// Costul materiei prime pentru TOATE bauturile vandute pana acum:
+// pentru fiecare produs, cantitate vanduta * costul de productie al retetei
+double Cafenea::costMateriePrimaVanduta() const
+{
+    double total = 0.0;
+    std::vector<std::pair<std::string, int> > vandute = istoric.topProduse(catalogR.size());
+    for (std::size_t i = 0; i < vandute.size(); ++i)
+    {
+        int ir = gasesteIndexReteta(vandute[i].first);
+        if (ir == -1)
+            continue;
+        double costUnitar = catalogR[ir].calculeazaCostProductie(stocIngrediente.data(),
+                                                                 static_cast<int>(stocIngrediente.size()));
+        total += vandute[i].second * costUnitar;
+    }
+    return total;
+}
+
+RaportFinanciar Cafenea::raportFinanciar() const
+{
+    return RaportFinanciar(istoric.totalIncasari(), istoric.totalReduceri(),
+                           costMateriePrimaVanduta(), cheltuieliReaprovizionare,
+                           istoric.getNumarComenzi());
+}
+
+void Cafenea::afiseazaRaportFinanciar() const
+{
+    std::cout << "\n" << raportFinanciar() << "\n";
+}
+
+// Scrie stocul curent in acelasi format pe care il citeste incarcaIngredienteDinFisier
+bool Cafenea::salveazaStocInFisier(const std::string& cale) const
+{
+    std::ofstream fisier(cale.c_str());
+    if (!fisier.is_open())
+        return false;
+
+    fisier << "# denumire;stoc;unitate;pret_unitar\n";
+    for (std::size_t i = 0; i < stocIngrediente.size(); ++i)
+    {
+        fisier << stocIngrediente[i].getdenumire() << ";"
+               << stocIngrediente[i].getcantitateDisponibila() << ";"
+               << stocIngrediente[i].getunitateMasura() << ";"
+               << stocIngrediente[i].getpretUnitate() << "\n";
+    }
+    return fisier.good();
 }

@@ -70,6 +70,8 @@ add_library(${MAIN_LIBRARY_NAME} STATIC
         include/CReteta.hpp
         include/Ingrediente.hpp
         include/Reteta.hpp
+        include/Promotie.hpp
+        include/RaportFinanciar.hpp
 
 )
 
@@ -87,6 +89,8 @@ target_sources(${MAIN_LIBRARY_NAME}
         src/Comanda.cpp
         src/IstoricVanzari.cpp
         src/LinieComanda.cpp
+        src/Promotie.cpp
+        src/RaportFinanciar.cpp
 
 )
 

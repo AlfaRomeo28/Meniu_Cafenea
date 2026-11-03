@@ -13,7 +13,7 @@ namespace
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
-    // true = continua, false = iesire
+
     bool continua()
     {
         char op;
@@ -26,7 +26,7 @@ namespace
         return false;
     }
 
-    // scoate spatiile de la inceputul si sfarsitul textului
+
     std::string taie(const std::string& text)
     {
         std::size_t inc = text.find_first_not_of(" \t\r");
@@ -75,6 +75,53 @@ namespace
         cafenea.adaugaIngredient(Ingrediente("Sirop Vanilie", 200.0, "ml", 0.05));
     }
 
+    // submeniu pentru promotii: afisare, adaugare, activare, dezactivare
+    void meniuPromotii(Cafenea& cafenea)
+    {
+        std::cout << "  1. Afiseaza promotiile\n"
+                  << "  2. Adauga o promotie\n"
+                  << "  3. Activeaza o promotie\n"
+                  << "  4. Dezactiveaza o promotie\n"
+                  << "  Alege: ";
+        int sub = 0;
+        std::cin >> sub;
+        curataLinie();
+
+        if (sub == 1)
+        {
+            cafenea.afiseazaPromotii();
+        }
+        else if (sub == 2)
+        {
+            std::string numePromo, produs;
+            double procent = 0.0;
+            std::cout << "Numele promotiei: ";
+            std::getline(std::cin, numePromo);
+            std::cout << "Produsul vizat: ";
+            std::getline(std::cin, produs);
+            std::cout << "Reducere (%): ";
+            std::cin >> procent;
+            curataLinie();
+
+            cafenea.adaugaPromotie(Promotie(taie(numePromo), taie(produs), procent));
+            std::cout << "[INFO] Promotie adaugata (oprita). Porneste-o din optiunea 3.\n";
+        }
+        else if (sub == 3 || sub == 4)
+        {
+            std::string numePromo;
+            std::cout << "Numele promotiei: ";
+            std::getline(std::cin, numePromo);
+            if (cafenea.seteazaStarePromotie(taie(numePromo), sub == 3))
+                std::cout << "[INFO] Promotia a fost " << (sub == 3 ? "activata" : "dezactivata") << ".\n";
+            else
+                std::cout << "[EROARE] Nu exista nicio promotie cu numele '" << numePromo << "'.\n";
+        }
+        else
+        {
+            std::cout << "Optiune invalida pentru promotii.\n";
+        }
+    }
+
     void afiseazaMeniu()
     {
         std::cout << "\n========================================\n"
@@ -91,6 +138,10 @@ namespace
                   << " 9. Afiseaza clientii si nivelurile de fidelitate\n"
                   << "10. Afiseaza istoricul vanzarilor\n"
                   << "11. Salveaza raportul de vanzari intr-un fisier\n"
+                  << "12. Gestioneaza promotiile\n"
+                  << "13. Afiseaza raportul financiar\n"
+                  << "14. Salveaza raportul financiar intr-un fisier\n"
+                  << "15. Salveaza stocul curent intr-un fisier\n"
                   << " 0. Iesire\n"
                   << "Alege o optiune: ";
     }
@@ -112,7 +163,7 @@ int main()
                                     CReteta("Sirop Vanilie", 20.0) };
     Reteta vanillaLatte("Vanilla Latte", 20.0, compVanillaLatte, 3);
 
-    // Demonstratie constructor de copiere si operator=
+    //  constructor de copiere si operator=
     Reteta copieTest = cappuccino;
     Reteta copieAtribuita;
     copieAtribuita = espresso;
@@ -122,6 +173,9 @@ int main()
     cafenea.adaugaReteta(espresso);
     cafenea.adaugaReteta(cappuccino);
     cafenea.adaugaReteta(vanillaLatte);
+
+    // promotie definita din start, oprita; se porneste din meniu (optiunea 12)
+    cafenea.adaugaPromotie(Promotie("Happy Hour Espresso", "Espresso", 20.0));
 
     std::vector<Client> clienti;
 
@@ -203,6 +257,34 @@ int main()
                 std::getline(std::cin, cale);
                 if (cafenea.salveazaRaportVanzari(cale))
                     std::cout << "[INFO] Raport salvat in '" << cale << "'.\n";
+                else
+                    std::cout << "[EROARE] Nu am putut scrie fisierul '" << cale << "'.\n";
+                break;
+            }
+            case 12:
+                meniuPromotii(cafenea);
+                break;
+            case 13:
+                cafenea.afiseazaRaportFinanciar();
+                break;
+            case 14:
+            {
+                std::string cale;
+                std::cout << "Numele fisierului de iesire: ";
+                std::getline(std::cin, cale);
+                if (cafenea.raportFinanciar().salveazaInFisier(cale))
+                    std::cout << "[INFO] Raport financiar salvat in '" << cale << "'.\n";
+                else
+                    std::cout << "[EROARE] Nu am putut scrie fisierul '" << cale << "'.\n";
+                break;
+            }
+            case 15:
+            {
+                std::string cale;
+                std::cout << "Numele fisierului pentru stoc: ";
+                std::getline(std::cin, cale);
+                if (cafenea.salveazaStocInFisier(cale))
+                    std::cout << "[INFO] Stoc salvat in '" << cale << "'.\n";
                 else
                     std::cout << "[EROARE] Nu am putut scrie fisierul '" << cale << "'.\n";
                 break;
